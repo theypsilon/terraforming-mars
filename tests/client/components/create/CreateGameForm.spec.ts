@@ -118,13 +118,13 @@ describe('CreateGameForm', () => {
     expect(wrapper.find('#startingPreludeNum-checkbox').exists()).is.false;
   });
 
-  it('offers Open Cards for one to five players and clears it at six', async () => {
+  it('offers Open Cards for one to six players and clears it at seven', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
     const form = wrapper.vm as any;
 
-    for (const count of [1, 2, 3, 4, 5]) {
+    for (const count of [1, 2, 3, 4, 5, 6]) {
       form.playersCount = count;
       await wrapper.vm.$nextTick();
       expect(wrapper.find('#openCards-checkbox').exists(), `${count} players`).is.true;
@@ -132,7 +132,7 @@ describe('CreateGameForm', () => {
 
     form.openCardsVariant = true;
     await wrapper.vm.$nextTick();
-    form.playersCount = 6;
+    form.playersCount = 7;
     await wrapper.vm.$nextTick();
 
     expect(form.openCardsVariant).is.false;

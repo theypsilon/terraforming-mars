@@ -85,8 +85,8 @@ function markStartingSelectionComplete(game: IGame): void {
 }
 
 describe('Open Cards', () => {
-  it('supports one to five players and rejects six', () => {
-    for (const count of [1, 2, 3, 4, 5]) {
+  it('supports one to six players and rejects seven', () => {
+    for (const count of [1, 2, 3, 4, 5, 6]) {
       const [game, ...players] = testGame(count, {openCardsVariant: true});
       const model = openCardsModel(game);
 
@@ -96,7 +96,7 @@ describe('Open Cards', () => {
       expect(model.draftPackets.flatMap((packet) => packet.cards)).deep.eq(model.projectDeck.slice(0, 4 * count));
     }
 
-    expect(() => testGame(6, {openCardsVariant: true})).to.throw('Open Cards supports one to five players.');
+    expect(() => testGame(7, {openCardsVariant: true})).to.throw('Open Cards supports one to six players.');
   });
 
   it('deals the standard offers', () => {
@@ -492,15 +492,15 @@ describe('Open Cards', () => {
     expect(player2.draftHand.map(toName)).deep.eq(projected[1].cards);
   });
 
-  it('the draft consumes one projected packet for each of five players', () => {
-    const [game, ...players] = testGame(5, {openCardsVariant: true, draftVariant: true});
+  it('the draft consumes one projected packet for each of six players', () => {
+    const [game, ...players] = testGame(6, {openCardsVariant: true, draftVariant: true});
     const projected = openCardsModel(game).draftPackets;
 
     game.generation = 1;
     finishGeneration(game);
 
     expect(game.phase).eq(Phase.DRAFTING);
-    expect(projected).has.length(5);
+    expect(projected).has.length(6);
     for (const [idx, player] of players.entries()) {
       expect(player.draftHand.map(toName)).deep.eq(projected[idx].cards);
     }

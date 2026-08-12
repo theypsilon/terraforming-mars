@@ -196,7 +196,7 @@
                         <div class="create-game-page-column">
                             <h4 v-i18n>Options</h4>
 
-                            <template v-if="playersCount >= 1 && playersCount <= 5">
+                            <template v-if="playersCount >= 1 && playersCount <= 6">
                               <input type="checkbox" name="openCardsVariant" v-model="openCardsVariant" id="openCards-checkbox">
                               <label for="openCards-checkbox" title="The project deck, discard order, starting offers, and players' hands are public">
                                   <span v-i18n>Open Cards</span>
@@ -682,7 +682,7 @@ export default defineComponent({
       if (value === 1) {
         this.expansions.corpera = true;
       }
-      if (value < 1 || value > 5) {
+      if (value < 1 || value > 6) {
         this.openCardsVariant = false;
       }
     },
@@ -739,7 +739,7 @@ export default defineComponent({
       if (!this.openCardsVariant) {
         return;
       }
-      if (this.playersCount < 1 || this.playersCount > 5) {
+      if (this.playersCount < 1 || this.playersCount > 6) {
         this.openCardsVariant = false;
         return;
       }

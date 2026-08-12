@@ -35,6 +35,14 @@ const FIVE_PLAYER_DECK = [
   CardName.MOHOLE_AREA,
 ] as const;
 
+const SIX_PLAYER_DECK = [
+  ...FIVE_PLAYER_DECK,
+  CardName.NITRITE_REDUCING_BACTERIA,
+  CardName.POWER_GRID,
+  CardName.RESEARCH,
+  CardName.STEELWORKS,
+] as const;
+
 function fakeOpenCardsModel(overrides?: Partial<OpenCardsModel>): OpenCardsModel {
   return {
     projectDeck: [...DECK],
@@ -117,6 +125,25 @@ describe('OpenCardsPanel', () => {
     expect(packets).has.length(5);
     expect(packets.map((packet) => cardNames(packet).length)).deep.eq([4, 4, 4, 4, 4]);
     expect(cardNames(packetGrid)).deep.eq([...FIVE_PLAYER_DECK]);
+  });
+
+  it('puts six player packets in one logical row', () => {
+    const colors = ['red', 'green', 'blue', 'yellow', 'black', 'purple'] as const;
+    const wrapper = mountPanel(fakeOpenCardsModel({
+      projectDeck: [...SIX_PLAYER_DECK],
+      draftPackets: colors.map((color, idx) => ({
+        color,
+        cards: SIX_PLAYER_DECK.slice(idx * 4, idx * 4 + 4),
+      })),
+    }));
+
+    const rows = wrapper.findAll('.open-cards-deck-row');
+    expect(rows).has.length(1);
+    const packetGrid = rows[0].find('.open-cards-packets');
+    const packets = packetGrid.findAll('.open-cards-packet');
+    expect(packets).has.length(6);
+    expect(packets.map((packet) => cardNames(packet).length)).deep.eq([4, 4, 4, 4, 4, 4]);
+    expect(cardNames(packetGrid)).deep.eq([...SIX_PLAYER_DECK]);
   });
 
   it('colors each packet for the player who would draft it', () => {
