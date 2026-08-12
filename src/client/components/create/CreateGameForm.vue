@@ -12,7 +12,7 @@
                     <div class="create-game-page-container">
                         <div class="create-game-page-column">
                             <h4 v-i18n>№ of Players</h4>
-                            <div v-for="pCount in [1,2,3,4,5,6]" :key="pCount">
+                            <div v-for="pCount in [1,2,3,4,5,6,7,8]" :key="pCount">
                               <input type="radio" :value="pCount" name="playersCount" v-model="playersCount" :id="pCount+'-radio'">
                               <label :for="pCount+'-radio'">
                                   {{ getPlayersCountText(pCount) }}
@@ -196,7 +196,7 @@
                         <div class="create-game-page-column">
                             <h4 v-i18n>Options</h4>
 
-                            <template v-if="playersCount >= 1 && playersCount <= 6">
+                            <template v-if="playersCount >= 1 && playersCount <= 8">
                               <input type="checkbox" name="openCardsVariant" v-model="openCardsVariant" id="openCards-checkbox">
                               <label for="openCards-checkbox" title="The project deck, discard order, starting offers, and players' hands are public">
                                   <span v-i18n>Open Cards</span>
@@ -682,7 +682,7 @@ export default defineComponent({
       if (value === 1) {
         this.expansions.corpera = true;
       }
-      if (value < 1 || value > 6) {
+      if (value < 1 || value > 8) {
         this.openCardsVariant = false;
       }
     },
@@ -739,7 +739,7 @@ export default defineComponent({
       if (!this.openCardsVariant) {
         return;
       }
-      if (this.playersCount < 1 || this.playersCount > 6) {
+      if (this.playersCount < 1 || this.playersCount > 8) {
         this.openCardsVariant = false;
         return;
       }

@@ -74,7 +74,7 @@ export type GameOptions = {
   altVenusBoard: boolean;
   escapeVelocity?: EscapeVelocityOptions;
   twoCorpsVariant: boolean;
-  /** Open Cards: a one-to-six-player variant where card information is public. */
+  /** Open Cards: a one-to-eight-player variant where card information is public. */
   openCardsVariant: boolean;
 }
 

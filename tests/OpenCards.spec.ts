@@ -85,8 +85,8 @@ function markStartingSelectionComplete(game: IGame): void {
 }
 
 describe('Open Cards', () => {
-  it('supports one to six players and rejects seven', () => {
-    for (const count of [1, 2, 3, 4, 5, 6]) {
+  it('supports one to eight players', () => {
+    for (const count of [1, 2, 3, 4, 5, 6, 7, 8]) {
       const [game, ...players] = testGame(count, {openCardsVariant: true});
       const model = openCardsModel(game);
 
@@ -95,8 +95,6 @@ describe('Open Cards', () => {
       expect(model.draftPackets.map((packet) => packet.color)).deep.eq(players.map((player) => player.color));
       expect(model.draftPackets.flatMap((packet) => packet.cards)).deep.eq(model.projectDeck.slice(0, 4 * count));
     }
-
-    expect(() => testGame(7, {openCardsVariant: true})).to.throw('Open Cards supports one to six players.');
   });
 
   it('deals the standard offers', () => {

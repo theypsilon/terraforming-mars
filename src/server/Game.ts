@@ -299,8 +299,8 @@ export class Game implements IGame, Logger {
 
     // Open Cards turns off setup variants whose initial offers it does not support.
     if (gameOptions.openCardsVariant) {
-      if (players.length < 1 || players.length > 6) {
-        throw new Error('Open Cards supports one to six players.');
+      if (players.length < 1 || players.length > 8) {
+        throw new Error('Open Cards supports one to eight players.');
       }
       gameOptions.ceoExtension = false;
       gameOptions.expansions = {...gameOptions.expansions, ceo: false};
