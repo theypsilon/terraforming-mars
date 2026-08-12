@@ -297,8 +297,7 @@ export class Game implements IGame, Logger {
       throw new Error('Delta Project cannot be banned. It is given to all players as part of the Delta Project.');
     }
 
-    // Open Cards uses the standard offers: 2 corporations, 4 preludes and 10 project cards.
-    // Everything that would offer something else is turned off here.
+    // Open Cards turns off setup variants whose initial offers it does not support.
     if (gameOptions.openCardsVariant) {
       if (players.length < 1 || players.length > 5) {
         throw new Error('Open Cards supports one to five players.');
@@ -307,8 +306,6 @@ export class Game implements IGame, Logger {
       gameOptions.ceoExtension = false;
       gameOptions.deltaProjectExpansion = false;
       gameOptions.expansions = {...gameOptions.expansions, prelude: true, ceo: false, deltaProject: false};
-      gameOptions.startingCorporations = constants.CORPORATION_CARDS_DEALT_PER_PLAYER;
-      gameOptions.startingPreludes = constants.PRELUDE_CARDS_DEALT_PER_PLAYER;
       gameOptions.initialDraftVariant = false;
       gameOptions.preludeDraftVariant = false;
       gameOptions.ceosDraftVariant = false;

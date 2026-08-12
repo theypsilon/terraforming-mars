@@ -101,8 +101,8 @@ describe('Open Cards', () => {
     }
   });
 
-  it('turns off setup variants that would offer something else', () => {
-    const [game] = openCardsGame({
+  it('turns off incompatible setup variants and preserves offer sizes', () => {
+    const [game, player, player2] = openCardsGame({
       ceoExtension: true,
       initialDraftVariant: true,
       preludeDraftVariant: true,
@@ -119,8 +119,12 @@ describe('Open Cards', () => {
     expect(options.preludeDraftVariant).is.false;
     expect(options.ceosDraftVariant).is.false;
     expect(options.twoCorpsVariant).is.false;
-    expect(options.startingCorporations).eq(2);
-    expect(options.startingPreludes).eq(4);
+    expect(options.startingCorporations).eq(4);
+    expect(options.startingPreludes).eq(6);
+    for (const p of [player, player2]) {
+      expect(p.dealtCorporationCards).has.length(4);
+      expect(p.dealtPreludeCards).has.length(6);
+    }
     expect(options.bannedCards).not.includes(CardName.LUNA_PROJECT_OFFICE);
     expect(options.bannedCards).not.includes(CardName.MARS_MATHS);
   });

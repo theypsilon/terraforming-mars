@@ -62,7 +62,7 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).solarPhaseOption).eq(true);
   });
 
-  it('normalizes and locks the Open Cards setup', async () => {
+  it('normalizes incompatible Open Cards options and preserves offer sizes', async () => {
     new CreateGameSettingsStorage(localStorage).saveSettings(createGameSettings({
       expansions: {...DEFAULT_EXPANSIONS, prelude: false, ceo: true, deltaProject: true},
       initialDraft: true,
@@ -89,21 +89,22 @@ describe('CreateGameForm', () => {
     expect(form.ceosDraftVariant).is.false;
     expect(form.twoCorpsVariant).is.false;
     expect(form.seededGame).is.false;
-    expect(form.startingCorporations).eq(2);
-    expect(form.startingPreludes).eq(4);
+    expect(form.startingCorporations).eq(4);
+    expect(form.startingPreludes).eq(8);
 
     for (const selector of [
       '#prelude-checkbox',
       '#ceo-checkbox',
       '#deltaProject-checkbox',
-      '#startingCorpNum-checkbox',
-      '#startingPreludeNum-checkbox',
       '#twoCorps-checkbox',
       '#seeded-checkbox',
       '#initialDraft-checkbox',
     ]) {
       expect((wrapper.get(selector).element as HTMLInputElement).disabled, selector).is.true;
     }
+
+    expect((wrapper.get('#startingCorpNum-checkbox').element as HTMLInputElement).disabled).is.false;
+    expect((wrapper.get('#startingPreludeNum-checkbox').element as HTMLInputElement).disabled).is.false;
 
     form.allOfficialExpansions = true;
     await wrapper.vm.$nextTick();
@@ -159,8 +160,8 @@ describe('CreateGameForm', () => {
     expect(settings.preludeDraftVariant).is.false;
     expect(settings.ceosDraftVariant).is.false;
     expect(settings.twoCorpsVariant).is.false;
-    expect(settings.startingCorporations).eq(2);
-    expect(settings.startingPreludes).eq(4);
+    expect(settings.startingCorporations).eq(4);
+    expect(settings.startingPreludes).eq(8);
   });
 
   it('shows warnings when restoring saved settings', async () => {
