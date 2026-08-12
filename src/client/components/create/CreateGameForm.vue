@@ -295,7 +295,7 @@
                                     <span v-i18n>Randomize board tiles</span>&nbsp;<a :href="wikiUrls.randomizeBoardTiles" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
 
-                            <input type="checkbox" v-model="seededGame" id="seeded-checkbox" :disabled="openCardsVariant">
+                            <input type="checkbox" v-model="seededGame" id="seeded-checkbox">
                             <label for="seeded-checkbox">
                                 <span v-i18n>Set Predefined Game</span>&nbsp;<a :href="wikiUrls.setPredefinedGame" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
@@ -748,7 +748,6 @@ export default defineComponent({
       this.preludeDraftVariant = false;
       this.ceosDraftVariant = false;
       this.twoCorpsVariant = false;
-      this.seededGame = false;
     },
     restoreLastSettings() {
       const settings = createGameSettingsStorage.loadSettings();
