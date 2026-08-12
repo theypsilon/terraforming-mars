@@ -58,7 +58,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     requiresMoonTrackCompletion: false,
     moonStandardProjectVariant: false,
     moonStandardProjectVariant1: false,
-    openCardsVariant: false,
+    openCardsVariant: true,
     altVenusBoard: false,
     escapeVelocityMode: false,
     escapeVelocityThreshold: constants.DEFAULT_ESCAPE_VELOCITY_THRESHOLD,

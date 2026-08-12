@@ -147,7 +147,7 @@ const TEMPLATE_EXPECTED: CreateGameModel = {
   requiresMoonTrackCompletion: false,
   moonStandardProjectVariant: false,
   moonStandardProjectVariant1: false,
-  openCardsVariant: false,
+  openCardsVariant: true,
   altVenusBoard: false,
   escapeVelocityMode: false,
   escapeVelocityThreshold: 30,

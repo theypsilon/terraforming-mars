@@ -43,9 +43,19 @@ describe('CreateGameForm', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
+  it('enables Open Cards for a new game by default', () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+
+    expect((wrapper.vm as any).openCardsVariant).is.true;
+    expect((wrapper.get('#openCards-checkbox').element as HTMLInputElement).checked).is.true;
+  });
+
   it('restores the last saved game settings on load', async () => {
     new CreateGameSettingsStorage(localStorage).saveSettings(createGameSettings({
       expansions: {...DEFAULT_EXPANSIONS, venus: true},
+      openCardsVariant: false,
     }));
 
     const wrapper = shallowMount(CreateGameForm, {
@@ -58,6 +68,7 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).players[1].name).eq('Bob');
     expect((wrapper.vm as any).board).eq(BoardName.HELLAS);
     expect((wrapper.vm as any).draftVariant).eq(false);
+    expect((wrapper.vm as any).openCardsVariant).eq(false);
     expect((wrapper.vm as any).expansions.venus).eq(true);
     expect((wrapper.vm as any).solarPhaseOption).eq(true);
   });
@@ -214,6 +225,7 @@ describe('CreateGameForm', () => {
 
     expect((wrapper.vm as any).board).eq(BoardName.THARSIS);
     expect((wrapper.vm as any).draftVariant).eq(true);
+    expect((wrapper.vm as any).openCardsVariant).is.true;
     expect(settingsStorage.loadSettings()).eq(undefined);
     expect(wrapper.findAllComponents({name: 'AppButton'}).map((button) => button.props('title'))).includes('Reset');
   });
