@@ -38,6 +38,13 @@
       @toggleTileView="cycleTileView()"
     />
 
+    <div v-if="game.openCards !== undefined" class="player_home_block player_home_block--open-cards nofloat">
+      <a name="openCards" class="player_home_anchor"></a>
+      <DynamicTitle v-if="game.openCards.players !== undefined" title="Open Cards" :color="spectator.color"/>
+      <OpenCardsSetup v-if="game.openCards.players !== undefined" :openCards="game.openCards" :players="spectator.players"/>
+      <OpenCardsPanel :openCards="game.openCards"/>
+    </div>
+
     <div v-if="game.colonies.length > 0" class="player_home_block" ref="colonies" id="shortkey-colonies">
       <a name="colonies" class="player_home_anchor"></a>
       <DynamicTitle title="Colonies" :color="spectator.color"/>
@@ -71,6 +78,8 @@ import Colony from '@/client/components/colonies/Colony.vue';
 import DynamicTitle from '@/client/components/common/DynamicTitle.vue';
 import GameBoardView from '@/client/components/GameBoardView.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
+import OpenCardsPanel from '@/client/components/openCards/OpenCardsPanel.vue';
+import OpenCardsSetup from '@/client/components/openCards/OpenCardsSetup.vue';
 import Sidebar from '@/client/components/Sidebar.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
 import PlayersOverview from '@/client/components/overview/PlayersOverview.vue';
@@ -99,6 +108,8 @@ export default defineComponent({
     GameBoardView,
     KeyboardShortcuts,
     LogPanel,
+    OpenCardsPanel,
+    OpenCardsSetup,
     PlayersOverview,
     PurgeWarning,
     Sidebar,

@@ -8,6 +8,8 @@ import {RecursivePartial} from '@/common/utils/utils';
 import {Tag} from '@/common/cards/Tag';
 import {SpecialTags} from '@/client/cards/SpecialTags';
 import {asComplete} from '../utils/models';
+import OpenCardsShortcut from '@/client/components/openCards/OpenCardsShortcut.vue';
+import TagCount from '@/client/components/TagCount.vue';
 
 describe('PlayerTags', () => {
   let wrapper: VueWrapper<any>;
@@ -153,5 +155,23 @@ describe('PlayerTags', () => {
     const cityCount = wrapper.vm.tagsInOrder.find((t: any) => t.name === SpecialTags.CITY_COUNT);
     expect(cityCount.points).to.eq(0);
     expect(cityCount.asterisk).to.eq(true);
+  });
+
+  it('places the Open Cards control immediately after Cards only in the top HUD', async () => {
+    const openCards = {
+      projectDeck: [],
+      projectDiscards: [],
+      draftPackets: [],
+    };
+    wrapper.vm.playerView.game.openCards = openCards;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.findComponent(OpenCardsShortcut).exists()).is.false;
+
+    await wrapper.setProps({isTopBar: true});
+
+    const shortcut = wrapper.getComponent(OpenCardsShortcut);
+    const cards = wrapper.findAllComponents(TagCount).find((tag) => tag.props('tag') === 'cards');
+    expect(shortcut.props('openCards')).deep.eq(openCards);
+    expect(cards?.element.parentElement?.nextElementSibling).eq(shortcut.element);
   });
 });

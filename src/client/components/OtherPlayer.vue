@@ -21,6 +21,14 @@
                 <StackedCards :cards="getCardsByType(player.tableau, [CardType.EVENT])" :player="player"/>
             </div>
         </div>
+        <div v-if="cardsInHand.length > 0" class="player_home_block">
+            <span v-i18n>Cards In Hand</span>
+            <div>
+                <div v-for="card in cardsInHand" :key="card.name" class="cardbox">
+                    <Card :card="card" />
+                </div>
+            </div>
+        </div>
         <div v-if="player.selfReplicatingRobotsCards.length > 0" class="player_home_block">
             <span v-i18n>Self-replicating Robots cards</span>
             <div>
@@ -38,6 +46,7 @@
 import {defineComponent} from 'vue';
 
 import StackedCards from '@/client/components/StackedCards.vue';
+import {CardModel} from '@/common/models/CardModel';
 import {PublicPlayerModel} from '@/common/models/PlayerModel';
 import {vueRoot} from '@/client/components/vueRoot';
 import Card from '@/client/components/card/Card.vue';
@@ -74,6 +83,10 @@ export default defineComponent({
     },
   },
   computed: {
+    /** Only Open Cards makes a hand public, so this is empty in every other game. */
+    cardsInHand(): ReadonlyArray<CardModel> {
+      return [...this.player.preludeCardsInHand ?? [], ...this.player.cardsInHand ?? []];
+    },
     CardType(): typeof CardType {
       return CardType;
     },

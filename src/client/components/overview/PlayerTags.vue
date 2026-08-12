@@ -11,6 +11,7 @@
               <PlayerTagDiscount v-if="all.discount" :amount="all.discount" :color="player.color"  :data-test="'discount-all'"/>
               <TagCount tag="cards" :count="cardsInHandCount" :size="'big'" :type="'main'"/>
             </div>
+            <OpenCardsShortcut v-if="isTopBar && playerView.game.openCards !== undefined" :openCards="playerView.game.openCards"/>
         </div>
         <div class="player-tags-secondary">
           <div class="tag-count-container" v-for="tagDetail of tags" :key="tagDetail.name">
@@ -45,6 +46,7 @@ import {PartyName} from '@/common/turmoil/PartyName';
 import {getCard} from '@/client/cards/ClientCardManifest';
 import {vueRoot} from '@/client/components/vueRoot';
 import {CardName} from '@/common/cards/CardName';
+import OpenCardsShortcut from '@/client/components/openCards/OpenCardsShortcut.vue';
 
 type InterfaceTagsType = Tag | SpecialTags | 'separator' | 'all';
 type TagDetail = {
@@ -233,6 +235,7 @@ export default defineComponent({
   },
 
   components: {
+    OpenCardsShortcut,
     TagCount,
     PlayerTagDiscount,
     PointsPerTag,

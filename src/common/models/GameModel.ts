@@ -8,6 +8,7 @@ import {Phase} from '../Phase';
 import {AresData} from '../ares/AresData';
 import {SpaceModel} from './SpaceModel';
 import {MoonModel} from './MoonModel';
+import {OpenCardsModel} from './OpenCardsModel';
 import {PathfindersModel} from './PathfindersModel';
 import {SpectatorId} from '../Types';
 import {ColonyName} from '../colonies/ColonyName';
@@ -34,6 +35,8 @@ export type GameModel = {
   moon: MoonModel | undefined;
   name: string;
   oceans: number;
+  /** Set when the Open Cards variant is on. */
+  openCards: OpenCardsModel | undefined;
   oxygenLevel: number;
   passedPlayers: ReadonlyArray<Color>;
   pathfinders: PathfindersModel | undefined;

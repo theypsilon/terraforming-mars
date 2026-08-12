@@ -110,6 +110,7 @@ describe('ApiCreateGame', () => {
         altVenusBoard: false,
         escapeVelocity: undefined,
         twoCorpsVariant: false,
+        openCardsVariant: false,
         customCeos: [],
         startingCeos: 0,
         startingPreludes: 0,

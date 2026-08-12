@@ -34,6 +34,7 @@ export type CreateGameModel = {
   modularMA: boolean;
   moonStandardProjectVariant: boolean;
   moonStandardProjectVariant1: boolean;
+  openCardsVariant: boolean;
   players: Array<NewPlayerModel>;
   playersCount: number;
   politicalAgendasExtension: AgendaStyle;

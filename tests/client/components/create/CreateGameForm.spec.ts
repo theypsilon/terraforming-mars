@@ -62,6 +62,107 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).solarPhaseOption).eq(true);
   });
 
+  it('normalizes and locks the Open Cards setup', async () => {
+    new CreateGameSettingsStorage(localStorage).saveSettings(createGameSettings({
+      expansions: {...DEFAULT_EXPANSIONS, prelude: false, ceo: true, deltaProject: true},
+      initialDraft: true,
+      preludeDraftVariant: true,
+      ceosDraftVariant: true,
+      twoCorpsVariant: true,
+      seededGame: true,
+      startingCorporations: 4,
+      startingPreludes: 8,
+      openCardsVariant: true,
+    }));
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    await wrapper.vm.$nextTick();
+
+    const form = wrapper.vm as any;
+    expect(form.expansions.prelude).is.true;
+    expect(form.expansions.ceo).is.false;
+    expect(form.expansions.deltaProject).is.false;
+    expect(form.initialDraft).is.false;
+    expect(form.preludeDraftVariant).is.false;
+    expect(form.ceosDraftVariant).is.false;
+    expect(form.twoCorpsVariant).is.false;
+    expect(form.seededGame).is.false;
+    expect(form.startingCorporations).eq(2);
+    expect(form.startingPreludes).eq(4);
+
+    for (const selector of [
+      '#prelude-checkbox',
+      '#ceo-checkbox',
+      '#deltaProject-checkbox',
+      '#startingCorpNum-checkbox',
+      '#startingPreludeNum-checkbox',
+      '#twoCorps-checkbox',
+      '#seeded-checkbox',
+      '#initialDraft-checkbox',
+    ]) {
+      expect((wrapper.get(selector).element as HTMLInputElement).disabled, selector).is.true;
+    }
+
+    form.allOfficialExpansions = true;
+    await wrapper.vm.$nextTick();
+    form.allOfficialExpansions = false;
+    await wrapper.vm.$nextTick();
+    expect(form.expansions.prelude).is.true;
+  });
+
+  it('offers Open Cards for one to five players and clears it at six', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const form = wrapper.vm as any;
+
+    for (const count of [1, 2, 3, 4, 5]) {
+      form.playersCount = count;
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('#openCards-checkbox').exists(), `${count} players`).is.true;
+    }
+
+    form.openCardsVariant = true;
+    await wrapper.vm.$nextTick();
+    form.playersCount = 6;
+    await wrapper.vm.$nextTick();
+
+    expect(form.openCardsVariant).is.false;
+    expect(wrapper.find('#openCards-checkbox').exists()).is.false;
+  });
+
+  it('normalizes Open Cards immediately before serialization', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const form = wrapper.vm as any;
+    form.playersCount = 2;
+    form.openCardsVariant = true;
+    form.expansions.prelude = false;
+    form.expansions.ceo = true;
+    form.expansions.deltaProject = true;
+    form.initialDraft = true;
+    form.preludeDraftVariant = true;
+    form.ceosDraftVariant = true;
+    form.twoCorpsVariant = true;
+    form.startingCorporations = 4;
+    form.startingPreludes = 8;
+
+    const settings = JSON.parse(await form.serializeSettings());
+
+    expect(settings.expansions.prelude).is.true;
+    expect(settings.expansions.ceo).is.false;
+    expect(settings.expansions.deltaProject).is.false;
+    expect(settings.initialDraft).is.false;
+    expect(settings.preludeDraftVariant).is.false;
+    expect(settings.ceosDraftVariant).is.false;
+    expect(settings.twoCorpsVariant).is.false;
+    expect(settings.startingCorporations).eq(2);
+    expect(settings.startingPreludes).eq(4);
+  });
+
   it('shows warnings when restoring saved settings', async () => {
     const alerts: Array<{title: string, message: string}> = [];
     const Root = defineComponent({

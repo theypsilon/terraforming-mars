@@ -1,0 +1,173 @@
+// A fixed number column, then the projected player packets. The inner grid keeps the existing
+// two-player row and wraps larger games after every two packets.
+.open-cards-deck-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.open-cards-packets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 12px;
+}
+
+// How many generations away this row's draft is.
+.open-cards-row-number {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: @text_main;
+  font-family: @font_family_main;
+  font-size: @font_size_small;
+}
+
+.open-cards-packet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: flex-start;
+  gap: 4px;
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+
+.open-cards-panel-title {
+  display: inline-block;
+  padding: .2rem .4rem;
+  color: lightblue;
+}
+
+.open-cards-panel-body {
+  overflow: visible;
+}
+
+.open-cards-chip {
+  position: relative;
+  cursor: pointer;
+}
+
+.open-cards-chip:focus-visible {
+  outline: 2px solid @text_main;
+  outline-offset: 2px;
+}
+
+// The card is teleported outside every scrolling/clipping container. Its inline coordinates
+// keep it centered immediately above or below the active chip and inside the viewport.
+.open-cards-preview {
+  position: fixed;
+  z-index: 110;
+  pointer-events: none;
+}
+
+.open-cards-offer {
+  margin-bottom: 12px;
+}
+
+.open-cards-player-header {
+  margin-bottom: 12px;
+  padding: 5px 8px;
+  border-radius: 8px;
+}
+
+.open-cards-player-name {
+  font-size: @font_size_huge;
+}
+
+.open-cards-setup-section-title {
+  margin: 12px 0 8px;
+  font-size: @font_size_big;
+}
+
+// Open Cards is the only variant that adds this control. It follows the existing Cards count
+// inside the top HUD and matches that counter's icon-and-label footprint.
+.open-cards-shortcut {
+  position: relative;
+  display: flex;
+  flex: 0 0 54px;
+  flex-direction: column;
+  align-self: flex-start;
+  width: 54px;
+  height: 71px;
+  margin-right: 8px;
+}
+
+.open-cards-shortcut-trigger {
+  appearance: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 71px;
+  margin: 0;
+  padding: 0;
+  color: white;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: @font_family_main;
+  text-align: center;
+  text-decoration: none;
+}
+
+.open-cards-shortcut-trigger:hover,
+.open-cards-shortcut-trigger:focus {
+  color: white;
+  text-decoration: none;
+}
+
+.open-cards-shortcut-icon {
+  display: block;
+  box-sizing: border-box;
+  width: 40px;
+  height: 34px;
+  margin: 0;
+  color: white;
+  background: #0008;
+  border-radius: 4px;
+  box-shadow: @outline-shadow;
+  font-family: serif;
+  font-size: 27px;
+  line-height: 34px;
+  text-align: center;
+}
+
+.open-cards-shortcut-trigger:hover .open-cards-shortcut-icon,
+.open-cards-shortcut-trigger:focus-visible .open-cards-shortcut-icon {
+  filter: brightness(130%);
+}
+
+.open-cards-shortcut-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 54px;
+  height: 26px;
+  margin-top: 11px;
+  color: #e8e8e8;
+  font-family: Prototype, sans-serif;
+  font-size: 10px;
+  line-height: 11px;
+  white-space: normal;
+  text-transform: uppercase;
+}
+
+.open-cards-shortcut-overlay {
+  position: fixed;
+  inset: 62px 8px 8px auto;
+  z-index: 100;
+  box-sizing: border-box;
+  width: min(1100px, calc(100vw - 16px));
+  padding: 12px 16px;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  white-space: normal;
+  background: @grey_900;
+  border: 1px solid #666;
+  border-radius: 8px;
+  box-shadow: 0 4px 18px black;
+}

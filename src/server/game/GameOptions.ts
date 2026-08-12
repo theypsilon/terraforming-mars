@@ -74,6 +74,8 @@ export type GameOptions = {
   altVenusBoard: boolean;
   escapeVelocity?: EscapeVelocityOptions;
   twoCorpsVariant: boolean;
+  /** Open Cards: a one-to-five-player variant where card information is public. */
+  openCardsVariant: boolean;
 }
 
 export const DEFAULT_GAME_OPTIONS: GameOptions = {
@@ -119,6 +121,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   moonExpansion: false,
   moonStandardProjectVariant: false,
   moonStandardProjectVariant1: false,
+  openCardsVariant: false,
   pathfindersExpansion: false,
   politicalAgendasExtension: 'Standard',
   preludeDraftVariant: false,

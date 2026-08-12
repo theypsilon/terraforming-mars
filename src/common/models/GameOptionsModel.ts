@@ -17,6 +17,7 @@ export type GameOptionsModel = {
   includedCards: ReadonlyArray<CardName>;
   includeFanMA: boolean,
   initialDraftVariant: boolean,
+  openCardsVariant: boolean,
   preludeDraftVariant: boolean,
   ceosDraftVariant: boolean,
   politicalAgendasExtension: AgendaStyle,

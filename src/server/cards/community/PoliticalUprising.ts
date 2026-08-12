@@ -39,21 +39,35 @@ export class PoliticalUprising extends PreludeCard implements IProjectCard {
     const turmoilCardNames = CardManifest.keys(TURMOIL_CARD_MANIFEST.projectCards);
 
     const projectDeck = player.game.projectDeck;
-    // Then find the first card in the deck that matches one of those names.
-    let drawnCard = projectDeck.drawPile.find((card) => turmoilCardNames.includes(card.name));
+    const findCardIndex = () => {
+      if (!player.game.gameOptions.openCardsVariant) {
+        return projectDeck.drawPile.findIndex((card) => turmoilCardNames.includes(card.name));
+      }
+      // Open Cards exposes the normal draw order, whose first card is at the end of drawPile.
+      for (let idx = projectDeck.drawPile.length - 1; idx >= 0; idx--) {
+        if (turmoilCardNames.includes(projectDeck.drawPile[idx].name)) {
+          return idx;
+        }
+      }
+      return -1;
+    };
+    let cardIndex = findCardIndex();
 
-    // If there's none in the draw pile, reshuffle the deck and look through the discard pile.
-    if (drawnCard === undefined) {
-      player.game.log(`The project deck has no Turmoil cards, so the discard pile is being reshuffled to form a new deck.`);
-      projectDeck.shuffle();
-      drawnCard = projectDeck.drawPile.find((card) => turmoilCardNames.includes(card.name));
+    // If there's none in the draw pile, recycle the discard pile and look through it.
+    if (cardIndex === -1) {
+      if (player.game.gameOptions.openCardsVariant) {
+        player.game.log(`The project deck has no Turmoil cards, so the discard pile becomes the new deck without shuffling.`);
+      } else {
+        player.game.log(`The project deck has no Turmoil cards, so the discard pile is being reshuffled to form a new deck.`);
+      }
+      projectDeck.recycle();
+      cardIndex = findCardIndex();
     }
 
-    if (drawnCard === undefined) {
+    if (cardIndex === -1) {
       player.game.log('${0} played ${1} to find a Turmoil card but none were found.', (b) => b.player(player).card(this));
     } else {
-      const cardIndex = projectDeck.drawPile.findIndex((c) => c.name === drawnCard.name);
-      projectDeck.drawPile.splice(cardIndex, 1);
+      const [drawnCard] = projectDeck.drawPile.splice(cardIndex, 1);
 
       player.cardsInHand.push(drawnCard);
       player.game.log('${0} drew ${1}', (b) => b.player(player).card(drawnCard));

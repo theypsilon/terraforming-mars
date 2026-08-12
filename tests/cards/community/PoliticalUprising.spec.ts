@@ -9,6 +9,7 @@ import {runAllActions, testGame} from '../../TestingUtils';
 import {MicroMills} from '@/server/cards/base/MicroMills';
 import {AICentral} from '@/server/cards/base/AICentral';
 import {PROffice} from '@/server/cards/turmoil/PROffice';
+import {SupportedResearch} from '@/server/cards/turmoil/SupportedResearch';
 import {CardName} from '@/common/cards/CardName';
 
 describe('PoliticalUprising', () => {
@@ -64,5 +65,28 @@ describe('PoliticalUprising', () => {
     expect(game.gameLog.some((msg) => msg.message.match(/The project deck has no Turmoil cards/))).is.true;
     expect(game.gameLog.some((msg) => msg.message.match(/played \$\{1\} to find a Turmoil card but/))).is.true;
     expect(player.cardsInHand).has.lengthOf(0);
+  });
+
+  it('Open Cards draws the first matching card in public draw order', () => {
+    [game, player] = testGame(2, {openCardsVariant: true, turmoilExtension: true});
+    player.game.projectDeck.drawPile = [new PROffice(), new SupportedResearch()];
+
+    card.play(player);
+
+    expect(player.cardsInHand).has.lengthOf(1);
+    expect(player.cardsInHand[0].name).eq(CardName.SUPPORTED_RESEARCH);
+  });
+
+  it('Open Cards reports FIFO recycling without claiming to shuffle', () => {
+    [game, player] = testGame(2, {openCardsVariant: true, turmoilExtension: true});
+    player.game.projectDeck.drawPile = [new MicroMills()];
+    player.game.projectDeck.discardPile = [new AICentral(), new PROffice()];
+
+    card.play(player);
+
+    const messages = game.gameLog.map((message) => message.message);
+    expect(messages.some((message) => message.includes('without shuffling'))).is.true;
+    expect(messages.some((message) => message.includes('being reshuffled'))).is.false;
+    expect(player.cardsInHand[0].name).eq(CardName.PR_OFFICE);
   });
 });

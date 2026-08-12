@@ -41,6 +41,8 @@ export type PublicPlayerModel = {
   availableBlueCardActionCount: number;
   cardCost: number;
   cardDiscount: number;
+  /** Set in Open Cards once all players' starting selections are complete. */
+  cardsInHand?: ReadonlyArray<CardModel>;
   cardsInHandNbr: number;
   citiesCount: number;
   coloniesCount: number;
@@ -64,6 +66,8 @@ export type PublicPlayerModel = {
   noTagsCount: number;
   plants: number;
   plantProduction: number;
+  /** Set in Open Cards, alongside `cardsInHand`. */
+  preludeCardsInHand?: ReadonlyArray<CardModel>;
   protectedResources: Record<Resource, Protection>;
   protectedProduction: Record<Resource, Protection>;
   tableau: ReadonlyArray<CardModel>;

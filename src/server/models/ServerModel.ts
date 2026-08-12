@@ -22,6 +22,8 @@ import {GameModel} from '../../common/models/GameModel';
 import {Turmoil} from '../turmoil/Turmoil';
 import {createPathfindersModel} from './PathfindersModel';
 import {MoonModel} from '../../common/models/MoonModel';
+import {OpenCardsModel, OpenCardsPlayerModel} from '../../common/models/OpenCardsModel';
+import {nextDraftPackets} from '../Draft';
 import {CardName} from '../../common/cards/CardName';
 import {AwardScorer} from '../awards/AwardScorer';
 import {SpaceId} from '../../common/Types';
@@ -51,13 +53,19 @@ export class Server {
 
   public static getGameModel(game: IGame): GameModel {
     const turmoil = getTurmoilModel(game);
+    const deckSize = game.gameOptions.openCardsVariant ?
+      game.getOpenCardsPublishedProjectDeck().length :
+      game.projectDeck.drawPile.length;
+    const discardPileSize = game.gameOptions.openCardsVariant ?
+      game.getOpenCardsPublishedProjectDiscards().length :
+      game.projectDeck.discardPile.length;
 
     return {
       aresData: game.aresData,
       awards: this.getAwards(game),
       colonies: coloniesToModel(game, game.colonies, false, true),
-      deckSize: game.projectDeck.drawPile.length,
-      discardPileSize: game.projectDeck.discardPile.length,
+      deckSize: deckSize,
+      discardPileSize: discardPileSize,
       discardedColonies: game.discardedColonies.map(toName),
       expectedPurgeTimeMs: game.expectedPurgeTimeMs(),
       gameAge: game.gameAge,
@@ -71,6 +79,7 @@ export class Server {
       moon: this.getMoonModel(game),
       name: game.name,
       oceans: game.board.getOceanSpaces().length,
+      openCards: this.getOpenCardsModel(game),
       oxygenLevel: game.getOxygenLevel(),
       passedPlayers: game.getPassedPlayers(),
       pathfinders: createPathfindersModel(game),
@@ -211,6 +220,8 @@ export class Server {
   public static getPlayer(player: IPlayer, modelIsForThisPlayer: boolean): PublicPlayerModel {
     const game = player.game;
     const useHandicap = game.players.some((p) => p.handicap !== 0);
+    const publishedCardsInHand = modelIsForThisPlayer ? undefined : game.getOpenCardsPublishedCardsInHand(player);
+    const hideOpenCardsHand = game.gameOptions.openCardsVariant && !modelIsForThisPlayer && publishedCardsInHand === undefined;
     const model: PublicPlayerModel = {
       actionsTakenThisRound: player.actionsTakenThisRound,
       actionsTakenThisGame: player.actionsTakenThisGame,
@@ -219,7 +230,7 @@ export class Server {
       availableBlueCardActionCount: player.getPlayableActionCards().length,
       cardCost: player.cardCost,
       cardDiscount: player.colonies.cardDiscount,
-      cardsInHandNbr: player.cardsInHand.length,
+      cardsInHandNbr: publishedCardsInHand?.length ?? (hideOpenCardsHand ? 0 : player.cardsInHand.length),
       citiesCount: game.board.getCities(player).length,
       coloniesCount: player.getColoniesCount(),
       color: player.color,
@@ -287,6 +298,14 @@ export class Server {
     }
 
     model.deltaProject = player.deltaProjectData;
+
+    // Open Cards makes every hand public after simultaneous choices reach their shared
+    // publication boundary. The owner already receives their current hand privately, so
+    // they don't get it twice.
+    if (publishedCardsInHand !== undefined) {
+      model.cardsInHand = cardsToModel(player, publishedCardsInHand, {showCalculatedCost: true});
+      model.preludeCardsInHand = cardsToModel(player, player.preludeCardsInHand);
+    }
 
     return model;
   }
@@ -438,6 +457,7 @@ export class Server {
       includedCards: options.includedCards,
       includeFanMA: options.includeFanMA,
       initialDraftVariant: options.initialDraftVariant,
+      openCardsVariant: options.openCardsVariant,
       preludeDraftVariant: options.preludeDraftVariant,
       ceosDraftVariant: options.ceosDraftVariant,
       politicalAgendasExtension: options.politicalAgendasExtension,
@@ -453,6 +473,55 @@ export class Server {
       twoCorpsVariant: options.twoCorpsVariant,
       undoOption: options.undoOption,
     };
+  }
+
+  /** True while players are still choosing their starting cards. */
+  private static inInitialSelection(game: IGame): boolean {
+    return game.generation === 1 && game.phase === Phase.RESEARCH;
+  }
+
+  private static getOpenCardsModel(game: IGame): OpenCardsModel | undefined {
+    if (!game.gameOptions.openCardsVariant) {
+      return undefined;
+    }
+    const projectDeck = game.getOpenCardsPublishedProjectDeck();
+    const projectDiscards = game.getOpenCardsPublishedProjectDiscards();
+    const futureCards = [...projectDeck, ...projectDiscards];
+    const model: OpenCardsModel = {
+      projectDeck: projectDeck.map(toName),
+      projectDiscards: projectDiscards.map(toName),
+      draftPackets: nextDraftPackets(game, futureCards).map((packet) => ({
+        color: packet.player.color,
+        cards: packet.cards.map(toName),
+      })),
+    };
+    if (this.inInitialSelection(game)) {
+      const publishSelections = game.players.every((player) => player.pickedCorporationCard !== undefined);
+      model.players = game.players.map((player) => this.getOpenCardsPlayer(player, publishSelections));
+    }
+    return model;
+  }
+
+  /**
+   * A player's starting offers, which are public from the start, and their selection, which
+   * only becomes public when all players have submitted all of their choices.
+   */
+  private static getOpenCardsPlayer(player: IPlayer, publishSelection: boolean): OpenCardsPlayerModel {
+    const model: OpenCardsPlayerModel = {
+      color: player.color,
+      corporations: player.dealtCorporationCards.map(toName),
+      preludes: player.dealtPreludeCards.map(toName),
+      projects: player.dealtProjectCards.map(toName),
+    };
+    const corporation = player.pickedCorporationCard;
+    if (publishSelection && corporation !== undefined) {
+      model.selection = {
+        corporation: corporation.name,
+        preludes: player.preludeCardsInHand.map(toName),
+        projects: player.cardsInHand.map(toName),
+      };
+    }
+    return model;
   }
 
   private static getMoonModel(game: IGame): MoonModel | undefined {

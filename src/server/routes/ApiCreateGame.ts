@@ -132,7 +132,7 @@ export class ApiCreateGame extends Handler {
             bannedCards: gameReq.bannedCards,
             boardName: gameReq.board,
             ceoExtension: gameReq.expansions.ceo,
-            clonedGamedId: gameReq.clonedGamedId,
+            clonedGamedId: gameReq.openCardsVariant === true ? undefined : gameReq.clonedGamedId,
             coloniesExtension: gameReq.expansions.colonies,
             communityCardsOption: gameReq.expansions.community,
             expansions: gameReq.expansions,
@@ -152,6 +152,7 @@ export class ApiCreateGame extends Handler {
             moonExpansion: gameReq.expansions.moon,
             moonStandardProjectVariant: gameReq.moonStandardProjectVariant,
             moonStandardProjectVariant1: gameReq.moonStandardProjectVariant1,
+            openCardsVariant: gameReq.openCardsVariant === true,
             pathfindersExpansion: gameReq.expansions.pathfinders,
             politicalAgendasExtension: gameReq.politicalAgendasExtension,
             prelude2Expansion: gameReq.expansions.prelude2,
@@ -197,4 +198,3 @@ export class ApiCreateGame extends Handler {
     });
   }
 }
-

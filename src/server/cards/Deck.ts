@@ -8,8 +8,16 @@ import {inplaceShuffle} from '../utils/shuffle';
 import {Logger} from '../logs/Logger';
 import {IPreludeCard} from './prelude/IPreludeCard';
 import {ICeoCard} from './ceos/ICeoCard';
-import {toName} from '../../common/utils/utils';
+import {copyAndClear, toName} from '../../common/utils/utils';
 import {Named} from '@/common/Types';
+
+/**
+ * What a deck does with its discard pile when the discards come back into play.
+ *
+ * 'shuffle' is the standard behavior. 'fifo' is the Open Cards behavior, where the deck
+ * order is never randomized after set-up, so the oldest discard is drawn first.
+ */
+export type DeckRecycleMode = 'shuffle' | 'fifo';
 
 /**
  * A deck of cards to draw from, and also its discard pile.
@@ -19,17 +27,19 @@ export class Deck<T extends Named<CardName>> {
   public drawPile: Array<T>;
   public discardPile: Array<T>;
   private readonly random: Random;
+  private readonly recycleMode: DeckRecycleMode;
 
   // Exposing shuffle so it can be replaced in tests.
   public static shuffle(array: Array<any>, random: Random) {
     inplaceShuffle(array, random);
   }
 
-  protected constructor(type: string, drawPile: Array<T>, discards: Array<T>, random: Random) {
+  protected constructor(type: string, drawPile: Array<T>, discards: Array<T>, random: Random, recycleMode: DeckRecycleMode = 'shuffle') {
     this.type = type;
     this.drawPile = drawPile;
     this.discardPile = discards;
     this.random = random;
+    this.recycleMode = recycleMode;
   }
 
   public shuffle(cardsOnTop: ReadonlyArray<CardName> = []) {
@@ -55,6 +65,28 @@ export class Deck<T extends Named<CardName>> {
       inplaceShuffle(rest, this.random);
       this.drawPile.push(...rest, ...top);
     }
+  }
+
+  /**
+   * Moves the discard pile into the draw pile, to be drawn after the cards already there.
+   *
+   * The whole deck is shuffled, unless this deck recycles FIFO, where the discards keep
+   * the order they were discarded in, oldest first.
+   */
+  public recycle(): void {
+    if (this.recycleMode === 'shuffle') {
+      this.shuffle();
+      return;
+    }
+    const discards = copyAndClear(this.discardPile);
+    // The draw pile is drawn from its end, so the oldest discard goes closest to it.
+    discards.reverse();
+    this.drawPile.unshift(...discards);
+  }
+
+  /** The draw pile, in the order the cards will be drawn. */
+  public inDrawOrder(): Array<T> {
+    return [...this.drawPile].reverse();
   }
 
   public draw(logger: Logger, source: 'top' | 'bottom' = 'top'): T | undefined {
@@ -94,8 +126,12 @@ export class Deck<T extends Named<CardName>> {
 
   private shuffleIfNecessary(logger: Logger) {
     if (this.drawPile.length === 0 && this.discardPile.length !== 0) {
-      logger.log(`The ${this.type} discard pile has been shuffled to form a new deck.`);
-      this.shuffle();
+      if (this.recycleMode === 'fifo') {
+        logger.log(`The ${this.type} discard pile has become the new deck.`);
+      } else {
+        logger.log(`The ${this.type} discard pile has been shuffled to form a new deck.`);
+      }
+      this.recycle();
     }
   }
 
@@ -144,6 +180,9 @@ export class Deck<T extends Named<CardName>> {
 
   // For Junk Ventures
   public shuffleDiscardPile(): void {
+    if (this.recycleMode === 'fifo') {
+      return;
+    }
     Deck.shuffle(this.discardPile, this.random);
   }
 
@@ -168,14 +207,14 @@ export class CorporationDeck extends Deck<ICorporationCard> {
 }
 
 export class ProjectDeck extends Deck<IProjectCard> {
-  public constructor(deck: Array<IProjectCard>, discarded: Array<IProjectCard>, random: Random) {
-    super('project', deck, discarded, random);
+  public constructor(deck: Array<IProjectCard>, discarded: Array<IProjectCard>, random: Random, recycleMode: DeckRecycleMode = 'shuffle') {
+    super('project', deck, discarded, random, recycleMode);
   }
 
-  public static deserialize(d: SerializedDeck, random: Random): Deck<IProjectCard> {
+  public static deserialize(d: SerializedDeck, random: Random, recycleMode: DeckRecycleMode = 'shuffle'): Deck<IProjectCard> {
     const deck = cardsFromJSON(d.drawPile);
     const discarded = cardsFromJSON(d.discardPile);
-    return new ProjectDeck(deck, discarded, random);
+    return new ProjectDeck(deck, discarded, random, recycleMode);
   }
 }
 

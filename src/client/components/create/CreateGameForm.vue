@@ -34,7 +34,7 @@
                                 <span v-i18n>Corporate Era</span>
                             </label>
 
-                            <input type="checkbox" name="prelude" id="prelude-checkbox" v-model="expansions.prelude">
+                            <input type="checkbox" name="prelude" id="prelude-checkbox" v-model="expansions.prelude" :disabled="openCardsVariant">
                             <label for="prelude-checkbox" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-prelude"></div>
                                 <span v-i18n>Prelude</span>
@@ -152,7 +152,7 @@
                                 </label>
                             </template>
 
-                            <input type="checkbox" name="ceo" id="ceo-checkbox" v-model="expansions.ceo">
+                            <input type="checkbox" name="ceo" id="ceo-checkbox" v-model="expansions.ceo" :disabled="openCardsVariant">
                             <label for="ceo-checkbox" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-ceo"></div>
                                 <span v-i18n>CEOs</span>&nbsp;<a :href="wikiUrls.ceo" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -170,7 +170,7 @@
                                 <span v-i18n>Underworld 2</span><span></span>&nbsp;<a :href="wikiUrls.underworld" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
 
-                            <input type="checkbox" name="deltaProject" id="deltaProject-checkbox" v-model="expansions.deltaProject">
+                            <input type="checkbox" name="deltaProject" id="deltaProject-checkbox" v-model="expansions.deltaProject" :disabled="openCardsVariant">
                             <label for="deltaProject-checkbox" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-deltaProject"></div>
                                 <span v-i18n>Delta Project</span>&nbsp;<span title="Alpha — work in progress">(&#945;)</span><span></span>&nbsp;<a :href="wikiUrls.deltaProject" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -196,15 +196,22 @@
                         <div class="create-game-page-column">
                             <h4 v-i18n>Options</h4>
 
+                            <template v-if="playersCount >= 1 && playersCount <= 5">
+                              <input type="checkbox" name="openCardsVariant" v-model="openCardsVariant" id="openCards-checkbox">
+                              <label for="openCards-checkbox" title="The project deck, discard order, starting offers, and players' hands are public">
+                                  <span v-i18n>Open Cards</span>
+                              </label>
+                            </template>
+
                             <label for="startingCorpNum-checkbox">
-                            <input type="number" class="create-game-corporations-count" value="2" min="1" :max="6" v-model="startingCorporations" id="startingCorpNum-checkbox">
+                            <input type="number" class="create-game-corporations-count" value="2" min="1" :max="6" v-model="startingCorporations" id="startingCorpNum-checkbox" :disabled="openCardsVariant">
                                 <span v-i18n>Starting Corporations</span>
                             </label>
 
                             <template v-if="expansions.prelude">
                               <label for="startingPreludeENum-checkbox">
                               <div class="create-game-expansion-icon expansion-icon-prelude"></div>
-                              <input type="number" class="create-game-corporations-count" value="4" min="4" :max="8" v-model="startingPreludes" id="startingPreludeNum-checkbox">
+                              <input type="number" class="create-game-corporations-count" value="4" min="4" :max="8" v-model="startingPreludes" id="startingPreludeNum-checkbox" :disabled="openCardsVariant">
                                   <span v-i18n>Starting Preludes</span>
                               </label>
                             </template>
@@ -276,7 +283,7 @@
                             </label>
 
                             <template v-if="expansions.prelude">
-                              <input type="checkbox" v-model="twoCorpsVariant" id="twoCorps-checkbox">
+                              <input type="checkbox" v-model="twoCorpsVariant" id="twoCorps-checkbox" :disabled="openCardsVariant">
                               <label for="twoCorps-checkbox" title="Always gain the Merger Prelude card (will be given post-draft)">
                                     <div class="create-game-expansion-icon expansion-icon-prelude"></div>
                                     <span v-i18n>Merger</span>&nbsp;<a :href="wikiUrls.merger" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -288,7 +295,7 @@
                                     <span v-i18n>Randomize board tiles</span>&nbsp;<a :href="wikiUrls.randomizeBoardTiles" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
 
-                            <input type="checkbox" v-model="seededGame" id="seeded-checkbox">
+                            <input type="checkbox" v-model="seededGame" id="seeded-checkbox" :disabled="openCardsVariant">
                             <label for="seeded-checkbox">
                                 <span v-i18n>Set Predefined Game</span>&nbsp;<a :href="wikiUrls.setPredefinedGame" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
@@ -360,7 +367,7 @@
                                 </div>
 
                                 <div>
-                                <input type="checkbox" name="initialDraft" v-model="initialDraft" id="initialDraft-checkbox">
+                                <input type="checkbox" name="initialDraft" v-model="initialDraft" id="initialDraft-checkbox" :disabled="openCardsVariant">
                                 <label for="initialDraft-checkbox">
                                     <span v-i18n>Initial Draft variant</span>&nbsp;<a :href="wikiUrls.initialDraft" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                 </label>
@@ -368,14 +375,14 @@
                             </div>
                             <div class="create-game-page-column-row" v-if="initialDraft">
                               <div v-if="expansions.prelude">
-                                <input type="checkbox" name="preludeDraft" v-model="preludeDraftVariant" id="preludeDraft-checkbox">
+                                <input type="checkbox" name="preludeDraft" v-model="preludeDraftVariant" id="preludeDraft-checkbox" :disabled="openCardsVariant">
                                 <label for="preludeDraft-checkbox">
                                   <span v-i18n>Prelude Draft</span>
                                 </label>
                               </div>
 
                               <div v-if="expansions.ceo">
-                                <input type="checkbox" name="ceosDraft" v-model="ceosDraftVariant" id="ceosDraft-checkbox">
+                                <input type="checkbox" name="ceosDraft" v-model="ceosDraftVariant" id="ceosDraft-checkbox" :disabled="openCardsVariant">
                                 <label for="ceosDraft-checkbox">
                                   <span v-i18n>CEO Draft</span>
                                 </label>
@@ -636,7 +643,7 @@ export default defineComponent({
   watch: {
     allOfficialExpansions(value: boolean) {
       this.expansions.corpera = value;
-      this.expansions.prelude = value;
+      this.expansions.prelude = value || this.openCardsVariant;
       this.expansions.venus = value;
       this.expansions.colonies = value;
       this.expansions.turmoil = value;
@@ -674,6 +681,15 @@ export default defineComponent({
     playersCount(value: number) {
       if (value === 1) {
         this.expansions.corpera = true;
+      }
+      if (value < 1 || value > 5) {
+        this.openCardsVariant = false;
+      }
+    },
+    openCardsVariant(value: boolean) {
+      // Open Cards uses the standard setup: 2 corporations, 4 preludes and 10 project cards.
+      if (value === true) {
+        this.normalizeOpenCardsOptions();
       }
     },
   },
@@ -719,6 +735,25 @@ export default defineComponent({
     },
   },
   methods: {
+    normalizeOpenCardsOptions() {
+      if (!this.openCardsVariant) {
+        return;
+      }
+      if (this.playersCount < 1 || this.playersCount > 5) {
+        this.openCardsVariant = false;
+        return;
+      }
+      this.expansions.prelude = true;
+      this.expansions.ceo = false;
+      this.expansions.deltaProject = false;
+      this.initialDraft = false;
+      this.preludeDraftVariant = false;
+      this.ceosDraftVariant = false;
+      this.twoCorpsVariant = false;
+      this.seededGame = false;
+      this.startingCorporations = 2;
+      this.startingPreludes = 4;
+    },
     restoreLastSettings() {
       const settings = createGameSettingsStorage.loadSettings();
       if (settings === undefined) {
@@ -741,6 +776,7 @@ export default defineComponent({
       this.uploading = true;
       try {
         processor.applyJSON(json);
+        this.normalizeOpenCardsOptions();
       } catch (e) {
         this.uploading = false;
         throw e;
@@ -956,6 +992,7 @@ export default defineComponent({
       return `${WIKI}/Maps#${options[boardName]}`;
     },
     async serializeSettings() {
+      this.normalizeOpenCardsOptions();
       let players = this.players.slice(0, this.playersCount);
 
       if (this.randomFirstPlayer) {
@@ -1252,6 +1289,7 @@ export default defineComponent({
         twoCorpsVariant,
         startingCeos,
         startingPreludes,
+        openCardsVariant: this.openCardsVariant,
       };
       return JSON.stringify(dataToSend, undefined, 4);
     },

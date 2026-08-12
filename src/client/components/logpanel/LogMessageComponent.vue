@@ -39,7 +39,6 @@
 import {defineComponent} from 'vue';
 import {Color} from '@/common/Color';
 import {CardName} from '@/common/cards/CardName';
-import {CardType} from '@/common/cards/CardType';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
 import {LogMessageData, LogMessageDataAttrs} from '@/common/logs/LogMessageData';
@@ -48,23 +47,12 @@ import {ViewModel} from '@/common/models/PlayerModel';
 import {tileTypeToString} from '@/common/TileType';
 import {Log} from '@/common/logs/Log';
 import {getCard} from '@/client/cards/ClientCardManifest';
+import {CARD_TYPE_CSS} from '@/client/utils/CardUtils';
 import {undergroundResourceTokenDescription} from '@/common/underworld/UndergroundResourceToken';
 import {isMoonSpace, getSpaceName} from '@/common/boards/spaces';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {gameLocaleToIntlLocale} from '@/client/utils/LocaleUtils';
 import {range} from '@/common/utils/utils';
-
-const cardTypeToCss: Record<CardType, string | undefined> = {
-  event: 'background-color-events',
-  corporation: 'background-color-corporation',
-  active: 'background-color-active',
-  automated: 'background-color-automated',
-  prelude: 'background-color-prelude',
-  ceo: 'background-color-ceo',
-  standard_project: 'background-color-standard-project',
-  standard_action: 'background-color-standard-project',
-  proxy: undefined,
-};
 
 export default defineComponent({
   name: 'LogMessageComponent',
@@ -108,7 +96,7 @@ export default defineComponent({
       }
 
       const suffixFreeCardName = card.name.split(':')[0];
-      const className = cardTypeToCss[card.type];
+      const className = CARD_TYPE_CSS[card.type];
 
       if (className === undefined) {
         return suffixFreeCardName;

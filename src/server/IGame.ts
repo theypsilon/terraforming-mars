@@ -33,6 +33,7 @@ import {GlobalParameter} from '../common/GlobalParameter';
 import {UnderworldData} from './underworld/UnderworldData';
 import {OrOptions} from './inputs/OrOptions';
 import {IStandardProjectCard} from './cards/IStandardProjectCard';
+import {IProjectCard} from './cards/IProjectCard';
 
 export interface Score {
   corporation: String;
@@ -158,6 +159,12 @@ export interface IGame extends Logger {
   playerHasPassed(player: IPlayer): void;
   hasResearched(player: IPlayer): boolean;
   playerIsFinishedWithResearchPhase(player: IPlayer): void;
+  /** The project cards in a player's hand that Open Cards may currently publish. */
+  getOpenCardsPublishedCardsInHand(player: IPlayer): ReadonlyArray<IProjectCard> | undefined;
+  /** The project deck that Open Cards may currently publish, in draw order. */
+  getOpenCardsPublishedProjectDeck(): ReadonlyArray<IProjectCard>;
+  /** The project discards that Open Cards may currently publish. */
+  getOpenCardsPublishedProjectDiscards(): ReadonlyArray<IProjectCard>;
   /**
    * Called when a player has finished taking actions. It sets up
    * the next player, or moves to the production phase.

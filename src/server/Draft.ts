@@ -11,6 +11,12 @@ import {ICeoCard} from './cards/ceos/ICeoCard';
 
 export type DraftType = 'none' | 'initial' | 'prelude' | 'ceos' | 'standard';
 
+/** The cards one player receives at the start of a draft iteration. */
+export type DraftPacket = {
+  player: IPlayer;
+  cards: ReadonlyArray<IProjectCard>;
+}
+
 /*
  * Drafting terminology:
  *
@@ -206,7 +212,28 @@ class StandardDraft extends Draft {
 
   override draw(player: IPlayer) {
     const cardsToDraw = this.cardsToDraw(player);
-    return this.game.projectDeck.drawN(this.game, cardsToDraw, 'bottom');
+    // Open Cards drafts take the same end of the deck ordinary draws take, which is what
+    // makes the deck the players see a truthful forecast of the next draft.
+    const source = this.game.gameOptions.openCardsVariant ? 'top' : 'bottom';
+    return this.game.projectDeck.drawN(this.game, cardsToDraw, source);
+  }
+
+  /** The cards each player would draw if this draft started right now. */
+  public packets(cards: ReadonlyArray<IProjectCard> = [
+    ...this.game.projectDeck.inDrawOrder(),
+    ...this.game.projectDeck.discardPile,
+  ]): Array<DraftPacket> {
+    // The discard pile is included because it becomes the deck, in a known order, once the
+    // deck runs out. That keeps the projection right when the deck is nearly empty.
+    let idx = 0;
+    return this.game.players.map((player) => {
+      // Open Cards always presents the normal four-card Research grouping. Cards such as
+      // Luna Project Office and Mars Maths still modify the real draft, but not this UI aid.
+      const cardsToDisplay = this.game.gameOptions.openCardsVariant ? 4 : this.cardsToDraw(player);
+      const packet = cards.slice(idx, idx + cardsToDisplay);
+      idx += packet.length;
+      return {player, cards: packet};
+    });
   }
 
   private cardsToDraw(player: IPlayer): number {
@@ -366,4 +393,13 @@ export function newPreludeDraft(game: IGame) {
 
 export function newCEOsDraft(game: IGame) {
   return new CEOsDraft(game);
+}
+
+/**
+ * The normal Research groups displayed beside the project deck.
+ *
+ * Open Cards keeps these groups at four cards even when a card modifies the real draft.
+ */
+export function nextDraftPackets(game: IGame, cards?: ReadonlyArray<IProjectCard>): Array<DraftPacket> {
+  return new StandardDraft(game).packets(cards);
 }

@@ -51,6 +51,8 @@
     <DynamicTitle v-if="playerView.pickedCorporationCard.length === 0" title="Select initial cards:" :color="thisPlayer.color"/>
     <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
 
+    <OpenCardsSetup v-if="game.openCards?.players !== undefined" :openCards="game.openCards" :players="playerView.players" :viewerColor="thisPlayer.color"/>
+
     <DynamicTitle title="Game details" :color="thisPlayer.color"/>
 
     <div class="player_home_block" v-if="playerView.players.length > 1">
@@ -108,6 +110,7 @@ import Awards from '@/client/components/Awards.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
 import Turmoil from '@/client/components/turmoil/Turmoil.vue';
 import MoonBoard from '@/client/components/moon/MoonBoard.vue';
+import OpenCardsSetup from '@/client/components/openCards/OpenCardsSetup.vue';
 import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue';
 import {playerColorClass} from '@/common/utils/utils';
 import {Phase} from '@/common/Phase';
@@ -146,6 +149,7 @@ export default defineComponent({
     WaitingFor,
     Milestones,
     Awards,
+    OpenCardsSetup,
     Turmoil,
     PlanetaryTracks,
     MoonBoard,

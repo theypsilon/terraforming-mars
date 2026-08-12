@@ -125,6 +125,11 @@
       <PlayerSetupView :playerView="playerView" :tileView="tileView"/>
     </template>
 
+    <div v-if="game.openCards !== undefined" class="player_home_block player_home_block--open-cards nofloat">
+      <a name="openCards" class="player_home_anchor"></a>
+      <OpenCardsPanel :openCards="game.openCards"/>
+    </div>
+
     <div v-if="game.colonies.length > 0" class="player_home_block" ref="colonies" id="shortkey-colonies">
       <a name="colonies" class="player_home_anchor hotkey-target"></a>
       <DynamicTitle title="Colonies" :color="thisPlayer.color"/>
@@ -158,6 +163,7 @@ import Sidebar from '@/client/components/Sidebar.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
 import GameBoardView from '@/client/components/GameBoardView.vue';
+import OpenCardsPanel from '@/client/components/openCards/OpenCardsPanel.vue';
 import PlayerSetupView from '@/client/components/PlayerSetupView.vue';
 import DynamicTitle from '@/client/components/common/DynamicTitle.vue';
 import SortableCards from '@/client/components/SortableCards.vue';
@@ -286,6 +292,7 @@ export default defineComponent({
     SortableCards,
     TopBar,
     GameBoardView,
+    OpenCardsPanel,
     PlayerSetupView,
     StackedCards,
     PurgeWarning,

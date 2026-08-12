@@ -80,6 +80,7 @@ import {maybeRenamedAward} from '../common/ma/AwardName';
 import {AresHazards} from './ares/AresHazards';
 import {hazardSeverity} from '../common/AresTileType';
 import {IStandardProjectCard} from './cards/IStandardProjectCard';
+import {IProjectCard} from './cards/IProjectCard';
 import {BoardName} from '../common/boards/BoardName';
 import {SpaceType} from '../common/boards/SpaceType';
 import {ICard} from './cards/ICard';
@@ -87,6 +88,12 @@ import {generateGameName} from './GameName';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
+
+type OpenCardsResearchSnapshot = {
+  cardsInHand: ReadonlyMap<PlayerId, ReadonlyArray<IProjectCard>>;
+  projectDeck: ReadonlyArray<IProjectCard>;
+  projectDiscards: ReadonlyArray<IProjectCard>;
+}
 
 export function setGameLog(f: () => Array<LogMessage>) {
   createGameLog = f;
@@ -133,6 +140,8 @@ export class Game implements IGame, Logger {
   private donePlayers = new Set<PlayerId>();
   private passedPlayers = new Set<PlayerId>();
   private researchedPlayers = new Set<PlayerId>();
+  /** Public project-card state from immediately before simultaneous Research choices. */
+  private openCardsResearchSnapshot: OpenCardsResearchSnapshot | undefined;
   /** The first player of this generation. */
   public first: IPlayer;
 
@@ -288,11 +297,29 @@ export class Game implements IGame, Logger {
       throw new Error('Delta Project cannot be banned. It is given to all players as part of the Delta Project.');
     }
 
+    // Open Cards uses the standard offers: 2 corporations, 4 preludes and 10 project cards.
+    // Everything that would offer something else is turned off here.
+    if (gameOptions.openCardsVariant) {
+      if (players.length < 1 || players.length > 5) {
+        throw new Error('Open Cards supports one to five players.');
+      }
+      gameOptions.preludeExtension = true;
+      gameOptions.ceoExtension = false;
+      gameOptions.deltaProjectExpansion = false;
+      gameOptions.expansions = {...gameOptions.expansions, prelude: true, ceo: false, deltaProject: false};
+      gameOptions.startingCorporations = constants.CORPORATION_CARDS_DEALT_PER_PLAYER;
+      gameOptions.startingPreludes = constants.PRELUDE_CARDS_DEALT_PER_PLAYER;
+      gameOptions.initialDraftVariant = false;
+      gameOptions.preludeDraftVariant = false;
+      gameOptions.ceosDraftVariant = false;
+      gameOptions.twoCorpsVariant = false;
+    }
+
     const rng = new SeededRandom(seed);
     const board = GameSetup.newBoard(gameOptions, rng);
     const gameCards = new GameCards(gameOptions);
 
-    const projectDeck = new ProjectDeck(gameCards.getProjectCards(), [], rng);
+    const projectDeck = new ProjectDeck(gameCards.getProjectCards(), [], rng, gameOptions.openCardsVariant ? 'fifo' : 'shuffle');
     projectDeck.shuffle();
 
     const corporationDeck = new CorporationDeck(gameCards.getCorporationCards(), [], rng);
@@ -688,6 +715,11 @@ export class Game implements IGame, Logger {
   private selectInitialCards(player: IPlayer): PlayerInput {
     return new SelectInitialCards(player, (corporation: ICorporationCard) => {
       this.playerHasPickedCorporationCard(player, corporation);
+      // Persist a submitted Open Cards selection even while it remains private pending the
+      // other players' selections.
+      if (this.gameOptions.openCardsVariant) {
+        this.save();
+      }
       return undefined;
     });
   }
@@ -745,12 +777,21 @@ export class Game implements IGame, Logger {
   }
 
   public gotoResearchPhase(): void {
+    this.openCardsResearchSnapshot = undefined;
     this.phase = Phase.RESEARCH;
     this.researchedPlayers.clear();
     this.save();
     this.players.forEach((player) => {
       player.runResearchPhase();
     });
+    if (this.gameOptions.openCardsVariant) {
+      this.openCardsResearchSnapshot = {
+        cardsInHand: new Map(this.players.map((player): [PlayerId, ReadonlyArray<IProjectCard>] =>
+          [player.id, player.cardsInHand.slice()])),
+        projectDeck: this.projectDeck.inDrawOrder(),
+        projectDiscards: this.projectDeck.discardPile.slice(),
+      };
+    }
   }
 
   private gotoDraftPhase(): void {
@@ -1044,10 +1085,36 @@ export class Game implements IGame, Logger {
     return this.researchedPlayers.has(player.id);
   }
 
+  private openCardsStartingSelectionsAreComplete(): boolean {
+    return this.players.every((player) => player.pickedCorporationCard !== undefined);
+  }
+
+  public getOpenCardsPublishedCardsInHand(player: IPlayer): ReadonlyArray<IProjectCard> | undefined {
+    if (!this.gameOptions.openCardsVariant || !this.openCardsStartingSelectionsAreComplete()) {
+      return undefined;
+    }
+    return this.openCardsResearchSnapshot?.cardsInHand.get(player.id) ?? player.cardsInHand;
+  }
+
+  public getOpenCardsPublishedProjectDeck(): ReadonlyArray<IProjectCard> {
+    return this.openCardsResearchSnapshot?.projectDeck ?? this.projectDeck.inDrawOrder();
+  }
+
+  public getOpenCardsPublishedProjectDiscards(): ReadonlyArray<IProjectCard> {
+    if (!this.gameOptions.openCardsVariant) {
+      return this.projectDeck.discardPile;
+    }
+    if (!this.openCardsStartingSelectionsAreComplete()) {
+      return [];
+    }
+    return this.openCardsResearchSnapshot?.projectDiscards ?? this.projectDeck.discardPile;
+  }
+
   public playerIsFinishedWithResearchPhase(player: IPlayer): void {
     this.deferredActions.runAllFor(player, () => {
       this.researchedPlayers.add(player.id);
       if (this.researchedPlayers.size === this.players.length) {
+        this.openCardsResearchSnapshot = undefined;
         this.researchedPlayers.clear();
         this.phase = Phase.ACTION;
         this.passedPlayers.clear();
@@ -1700,6 +1767,7 @@ export class Game implements IGame, Logger {
   public static deserialize(d: SerializedGame): Game {
     const gameOptions = d.gameOptions;
     gameOptions.boardName = normalizeBoardName(gameOptions.boardName);
+    gameOptions.openCardsVariant ??= false;
     const players = d.players.map((element) => Player.deserialize(element));
     const first = players.find((player) => player.id === d.first);
     if (first === undefined) {
@@ -1710,7 +1778,7 @@ export class Game implements IGame, Logger {
 
     const rng = new SeededRandom(d.seed, d.currentSeed);
 
-    const projectDeck = ProjectDeck.deserialize(d.projectDeck, rng);
+    const projectDeck = ProjectDeck.deserialize(d.projectDeck, rng, gameOptions.openCardsVariant ? 'fifo' : 'shuffle');
     const corporationDeck = CorporationDeck.deserialize(d.corporationDeck, rng);
     const preludeDeck = PreludeDeck.deserialize(d.preludeDeck, rng);
 
