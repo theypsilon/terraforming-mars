@@ -81,7 +81,7 @@ describe('CreateGameForm', () => {
     await wrapper.vm.$nextTick();
 
     const form = wrapper.vm as any;
-    expect(form.expansions.prelude).is.true;
+    expect(form.expansions.prelude).is.false;
     expect(form.expansions.ceo).is.false;
     expect(form.expansions.deltaProject).is.false;
     expect(form.initialDraft).is.false;
@@ -93,24 +93,29 @@ describe('CreateGameForm', () => {
     expect(form.startingPreludes).eq(8);
 
     for (const selector of [
-      '#prelude-checkbox',
       '#ceo-checkbox',
       '#deltaProject-checkbox',
-      '#twoCorps-checkbox',
       '#seeded-checkbox',
       '#initialDraft-checkbox',
     ]) {
       expect((wrapper.get(selector).element as HTMLInputElement).disabled, selector).is.true;
     }
 
+    expect((wrapper.get('#prelude-checkbox').element as HTMLInputElement).disabled).is.false;
     expect((wrapper.get('#startingCorpNum-checkbox').element as HTMLInputElement).disabled).is.false;
-    expect((wrapper.get('#startingPreludeNum-checkbox').element as HTMLInputElement).disabled).is.false;
+    expect(wrapper.find('#startingPreludeNum-checkbox').exists()).is.false;
+    expect(wrapper.find('#twoCorps-checkbox').exists()).is.false;
 
     form.allOfficialExpansions = true;
     await wrapper.vm.$nextTick();
+    expect(form.expansions.prelude).is.true;
+    expect((wrapper.get('#startingPreludeNum-checkbox').element as HTMLInputElement).disabled).is.false;
+    expect((wrapper.get('#twoCorps-checkbox').element as HTMLInputElement).disabled).is.true;
+
     form.allOfficialExpansions = false;
     await wrapper.vm.$nextTick();
-    expect(form.expansions.prelude).is.true;
+    expect(form.expansions.prelude).is.false;
+    expect(wrapper.find('#startingPreludeNum-checkbox').exists()).is.false;
   });
 
   it('offers Open Cards for one to five players and clears it at six', async () => {
@@ -153,7 +158,7 @@ describe('CreateGameForm', () => {
 
     const settings = JSON.parse(await form.serializeSettings());
 
-    expect(settings.expansions.prelude).is.true;
+    expect(settings.expansions.prelude).is.false;
     expect(settings.expansions.ceo).is.false;
     expect(settings.expansions.deltaProject).is.false;
     expect(settings.initialDraft).is.false;

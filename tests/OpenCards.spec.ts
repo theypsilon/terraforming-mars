@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 import {CardName} from '../src/common/cards/CardName';
+import {InputResponse} from '../src/common/inputs/InputResponse';
 import {Phase} from '../src/common/Phase';
 import {OpenCardsModel} from '../src/common/models/OpenCardsModel';
 import {PublicPlayerModel} from '../src/common/models/PlayerModel';
@@ -18,21 +19,29 @@ import {finishGeneration} from './TestingUtils';
 
 /** An Open Cards game with the starting selection still open. */
 function openCardsGame(options: Partial<TestGameOptions> = {}): [IGame, IPlayer, IPlayer] {
-  const [game, player, player2] = testGame(2, {openCardsVariant: true, skipInitialCardSelection: false, ...options});
+  const [game, player, player2] = testGame(2, {
+    openCardsVariant: true,
+    preludeExtension: true,
+    skipInitialCardSelection: false,
+    ...options,
+  });
   return [game, player, player2];
 }
 
 /** Submits a player's whole starting selection the way an inbound request does. */
 function submitInitialCards(player: IPlayer, projects: ReadonlyArray<CardName> = []) {
   const input = cast(player.getWaitingFor(), SelectInitialCards);
-  const preludes = cast(input.inputs.prelude, SelectCard).cards.slice(0, 2).map(toName);
+  const responses: Array<InputResponse> = [
+    {type: 'card', cards: [player.dealtCorporationCards[0].name]},
+  ];
+  if (input.inputs.prelude !== undefined) {
+    const preludes = cast(input.inputs.prelude, SelectCard).cards.slice(0, 2).map(toName);
+    responses.push({type: 'card', cards: preludes});
+  }
+  responses.push({type: 'card', cards: [...projects]});
   player.process({
     type: 'initialCards',
-    responses: [
-      {type: 'card', cards: [player.dealtCorporationCards[0].name]},
-      {type: 'card', cards: preludes},
-      {type: 'card', cards: [...projects]},
-    ],
+    responses,
   });
 }
 
@@ -99,6 +108,22 @@ describe('Open Cards', () => {
       expect(p.dealtProjectCards).has.length(10);
       expect(p.dealtCeoCards).is.empty;
     }
+  });
+
+  it('allows Open Cards without Prelude', () => {
+    const [game, player, player2] = openCardsGame({preludeExtension: false});
+
+    expect(game.gameOptions.preludeExtension).is.false;
+    expect(game.gameOptions.expansions.prelude).is.false;
+    expect(player.dealtPreludeCards).is.empty;
+    expect(player2.dealtPreludeCards).is.empty;
+    expect(openCardsModel(game).players?.map((offer) => offer.preludes)).deep.eq([[], []]);
+
+    submitInitialCards(player);
+    expect(asSeenBy(player2)?.players?.[0].selection).is.undefined;
+    submitInitialCards(player2);
+
+    expect(publicPlayers(player2)[0].preludeCardsInHand).deep.eq([]);
   });
 
   it('turns off incompatible setup variants and preserves offer sizes', () => {

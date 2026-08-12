@@ -34,7 +34,7 @@
                                 <span v-i18n>Corporate Era</span>
                             </label>
 
-                            <input type="checkbox" name="prelude" id="prelude-checkbox" v-model="expansions.prelude" :disabled="openCardsVariant">
+                            <input type="checkbox" name="prelude" id="prelude-checkbox" v-model="expansions.prelude">
                             <label for="prelude-checkbox" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-prelude"></div>
                                 <span v-i18n>Prelude</span>
@@ -643,7 +643,7 @@ export default defineComponent({
   watch: {
     allOfficialExpansions(value: boolean) {
       this.expansions.corpera = value;
-      this.expansions.prelude = value || this.openCardsVariant;
+      this.expansions.prelude = value;
       this.expansions.venus = value;
       this.expansions.colonies = value;
       this.expansions.turmoil = value;
@@ -743,7 +743,6 @@ export default defineComponent({
         this.openCardsVariant = false;
         return;
       }
-      this.expansions.prelude = true;
       this.expansions.ceo = false;
       this.expansions.deltaProject = false;
       this.initialDraft = false;
