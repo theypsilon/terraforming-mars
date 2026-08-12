@@ -99,18 +99,18 @@ describe('CreateGameForm', () => {
     expect(form.preludeDraftVariant).is.false;
     expect(form.ceosDraftVariant).is.false;
     expect(form.twoCorpsVariant).is.false;
-    expect(form.seededGame).is.false;
+    expect(form.seededGame).is.true;
     expect(form.startingCorporations).eq(4);
     expect(form.startingPreludes).eq(8);
 
     for (const selector of [
       '#ceo-checkbox',
-      '#seeded-checkbox',
       '#initialDraft-checkbox',
     ]) {
       expect((wrapper.get(selector).element as HTMLInputElement).disabled, selector).is.true;
     }
 
+    expect((wrapper.get('#seeded-checkbox').element as HTMLInputElement).disabled).is.false;
     expect((wrapper.get('#prelude-checkbox').element as HTMLInputElement).disabled).is.false;
     expect((wrapper.get('#deltaProject-checkbox').element as HTMLInputElement).disabled).is.false;
     expect((wrapper.get('#startingCorpNum-checkbox').element as HTMLInputElement).disabled).is.false;

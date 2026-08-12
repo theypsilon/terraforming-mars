@@ -1,6 +1,8 @@
 import {expect} from 'chai';
 import {BoardName} from '../../src/common/boards/BoardName';
+import {DEFAULT_EXPANSIONS} from '../../src/common/cards/GameModule';
 import {ApiCreateGame} from '../../src/server/routes/ApiCreateGame';
+import {Database} from '../../src/server/database/Database';
 import {MockRequest, MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
@@ -9,6 +11,7 @@ import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {SimpleGameModel} from '../../src/common/models/SimpleGameModel';
 import {FakeClock} from '../common/FakeClock';
+import {testGame} from '../TestGame';
 
 describe('ApiCreateGame', () => {
   let scaffolding: RouteTestScaffolding;
@@ -127,6 +130,47 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].name).eq('Robot');
+  });
+
+  it('clones an Open Cards predefined game', async () => {
+    const [sourceGame] = testGame(2, {openCardsVariant: true});
+    const serialized = sourceGame.serialize();
+    const database = Database.getInstance();
+    const originalGetGameVersion = database.getGameVersion;
+    database.getGameVersion = async (gameId, saveId) => {
+      expect(gameId).eq(sourceGame.id);
+      expect(saveId).eq(0);
+      return serialized;
+    };
+
+    try {
+      const post = scaffolding.post(apiCreateGame, res);
+      const emit = Promise.resolve().then(() => {
+        req.emitter.emit('data', JSON.stringify({
+          players: [
+            {name: 'Alice', color: 'red', beginner: false, handicap: 0, first: true},
+            {name: 'Bob', color: 'blue', beginner: false, handicap: 0},
+          ],
+          expansions: DEFAULT_EXPANSIONS,
+          board: BoardName.THARSIS,
+          clonedGamedId: sourceGame.id,
+          openCardsVariant: true,
+        }));
+        req.emitter.emit('end');
+      });
+      await Promise.all([emit, post]);
+
+      expect(res.statusCode).eq(statusCode.ok);
+      const model = JSON.parse(res.content) as SimpleGameModel;
+      const clone = await scaffolding.ctx.gameLoader.getGame(model.id);
+      expect(clone).is.not.undefined;
+      expect(clone!.gameOptions.openCardsVariant).is.true;
+      expect(clone!.projectDeck.inDrawOrder().map((card) => card.name))
+        .deep.eq(sourceGame.projectDeck.inDrawOrder().map((card) => card.name));
+      expect(clone!.serialize().clonedGamedId).eq('#' + sourceGame.id);
+    } finally {
+      database.getGameVersion = originalGetGameVersion;
+    }
   });
 
   it('red rover solo game', async () => {
