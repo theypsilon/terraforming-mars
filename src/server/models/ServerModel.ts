@@ -515,9 +515,10 @@ export class Server {
     };
     const corporation = player.pickedCorporationCard;
     if (publishSelection && corporation !== undefined) {
+      const dealtPreludeNames = new Set(player.dealtPreludeCards.map(toName));
       model.selection = {
         corporation: corporation.name,
-        preludes: player.preludeCardsInHand.map(toName),
+        preludes: player.preludeCardsInHand.filter((card) => dealtPreludeNames.has(card.name)).map(toName),
         projects: player.cardsInHand.map(toName),
       };
     }

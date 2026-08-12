@@ -303,8 +303,7 @@ export class Game implements IGame, Logger {
         throw new Error('Open Cards supports one to five players.');
       }
       gameOptions.ceoExtension = false;
-      gameOptions.deltaProjectExpansion = false;
-      gameOptions.expansions = {...gameOptions.expansions, ceo: false, deltaProject: false};
+      gameOptions.expansions = {...gameOptions.expansions, ceo: false};
       gameOptions.initialDraftVariant = false;
       gameOptions.preludeDraftVariant = false;
       gameOptions.ceosDraftVariant = false;

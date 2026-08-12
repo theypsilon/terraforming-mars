@@ -83,7 +83,7 @@ describe('CreateGameForm', () => {
     const form = wrapper.vm as any;
     expect(form.expansions.prelude).is.false;
     expect(form.expansions.ceo).is.false;
-    expect(form.expansions.deltaProject).is.false;
+    expect(form.expansions.deltaProject).is.true;
     expect(form.initialDraft).is.false;
     expect(form.preludeDraftVariant).is.false;
     expect(form.ceosDraftVariant).is.false;
@@ -94,7 +94,6 @@ describe('CreateGameForm', () => {
 
     for (const selector of [
       '#ceo-checkbox',
-      '#deltaProject-checkbox',
       '#seeded-checkbox',
       '#initialDraft-checkbox',
     ]) {
@@ -102,6 +101,7 @@ describe('CreateGameForm', () => {
     }
 
     expect((wrapper.get('#prelude-checkbox').element as HTMLInputElement).disabled).is.false;
+    expect((wrapper.get('#deltaProject-checkbox').element as HTMLInputElement).disabled).is.false;
     expect((wrapper.get('#startingCorpNum-checkbox').element as HTMLInputElement).disabled).is.false;
     expect(wrapper.find('#startingPreludeNum-checkbox').exists()).is.false;
     expect(wrapper.find('#twoCorps-checkbox').exists()).is.false;
@@ -160,7 +160,7 @@ describe('CreateGameForm', () => {
 
     expect(settings.expansions.prelude).is.false;
     expect(settings.expansions.ceo).is.false;
-    expect(settings.expansions.deltaProject).is.false;
+    expect(settings.expansions.deltaProject).is.true;
     expect(settings.initialDraft).is.false;
     expect(settings.preludeDraftVariant).is.false;
     expect(settings.ceosDraftVariant).is.false;

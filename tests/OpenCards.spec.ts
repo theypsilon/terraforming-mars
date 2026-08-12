@@ -184,18 +184,24 @@ describe('Open Cards', () => {
     expect(cards.map(toName)).includes(CardName.MARS_MATHS);
   });
 
-  it('reports only the two selected Preludes when Delta Project is enabled', () => {
+  it('allows Delta Project and reports only the two selected Preludes', () => {
     const [game, player, player2] = openCardsGame({deltaProjectExpansion: true});
+    const selectedPreludes = player.dealtPreludeCards.slice(0, 2).map(toName);
 
-    expect(game.gameOptions.deltaProjectExpansion).is.false;
-    expect(game.gameOptions.expansions.deltaProject).is.false;
-    expect(player.preludeCardsInHand.map(toName)).not.includes(CardName.DELTA_PROJECT);
+    expect(game.gameOptions.deltaProjectExpansion).is.true;
+    expect(game.gameOptions.expansions.deltaProject).is.true;
+    expect(player.preludeCardsInHand.map(toName)).includes(CardName.DELTA_PROJECT);
+    expect(player2.preludeCardsInHand.map(toName)).includes(CardName.DELTA_PROJECT);
 
     submitInitialCards(player);
     expect(asSeenBy(player2)?.players?.[0].selection).is.undefined;
     submitInitialCards(player2);
 
-    expect(publicPlayers(player2)[0].preludeCardsInHand).has.length(2);
+    expect(publicPlayers(player2)[0].preludeCardsInHand?.map(toName)).includes(CardName.DELTA_PROJECT);
+
+    const reloaded = Game.deserialize(game.serialize());
+    reloaded.phase = Phase.RESEARCH;
+    expect(openCardsModel(reloaded).players?.[0].selection?.preludes).deep.eq(selectedPreludes);
   });
 
   it('is off by default', () => {
