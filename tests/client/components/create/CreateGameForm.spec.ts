@@ -62,7 +62,7 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).solarPhaseOption).eq(true);
   });
 
-  it('normalizes incompatible Open Cards options and preserves offer sizes', async () => {
+  it('normalizes unsupported Open Cards options and preserves Merger and offer sizes', async () => {
     new CreateGameSettingsStorage(localStorage).saveSettings(createGameSettings({
       expansions: {...DEFAULT_EXPANSIONS, prelude: false, ceo: true, deltaProject: true},
       initialDraft: true,
@@ -87,7 +87,7 @@ describe('CreateGameForm', () => {
     expect(form.initialDraft).is.false;
     expect(form.preludeDraftVariant).is.false;
     expect(form.ceosDraftVariant).is.false;
-    expect(form.twoCorpsVariant).is.false;
+    expect(form.twoCorpsVariant).is.true;
     expect(form.seededGame).is.true;
     expect(form.startingCorporations).eq(4);
     expect(form.startingPreludes).eq(8);
@@ -110,7 +110,8 @@ describe('CreateGameForm', () => {
     await wrapper.vm.$nextTick();
     expect(form.expansions.prelude).is.true;
     expect((wrapper.get('#startingPreludeNum-checkbox').element as HTMLInputElement).disabled).is.false;
-    expect((wrapper.get('#twoCorps-checkbox').element as HTMLInputElement).disabled).is.true;
+    expect((wrapper.get('#twoCorps-checkbox').element as HTMLInputElement).disabled).is.false;
+    expect((wrapper.get('#twoCorps-checkbox').element as HTMLInputElement).checked).is.true;
 
     form.allOfficialExpansions = false;
     await wrapper.vm.$nextTick();
@@ -164,7 +165,7 @@ describe('CreateGameForm', () => {
     expect(settings.initialDraft).is.false;
     expect(settings.preludeDraftVariant).is.false;
     expect(settings.ceosDraftVariant).is.false;
-    expect(settings.twoCorpsVariant).is.false;
+    expect(settings.twoCorpsVariant).is.true;
     expect(settings.startingCorporations).eq(4);
     expect(settings.startingPreludes).eq(8);
   });

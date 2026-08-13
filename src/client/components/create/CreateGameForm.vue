@@ -283,7 +283,7 @@
                             </label>
 
                             <template v-if="expansions.prelude">
-                              <input type="checkbox" v-model="twoCorpsVariant" id="twoCorps-checkbox" :disabled="openCardsVariant">
+                              <input type="checkbox" v-model="twoCorpsVariant" id="twoCorps-checkbox">
                               <label for="twoCorps-checkbox" title="Always gain the Merger Prelude card (will be given post-draft)">
                                     <div class="create-game-expansion-icon expansion-icon-prelude"></div>
                                     <span v-i18n>Merger</span>&nbsp;<a :href="wikiUrls.merger" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -747,7 +747,6 @@ export default defineComponent({
       this.initialDraft = false;
       this.preludeDraftVariant = false;
       this.ceosDraftVariant = false;
-      this.twoCorpsVariant = false;
     },
     restoreLastSettings() {
       const settings = createGameSettingsStorage.loadSettings();

@@ -125,7 +125,7 @@ describe('Open Cards', () => {
     expect(publicPlayers(player2)[0].preludeCardsInHand).deep.eq([]);
   });
 
-  it('turns off incompatible setup variants and preserves offer sizes', () => {
+  it('turns off unsupported setup variants but preserves Merger', () => {
     const [game, player, player2] = openCardsGame({
       ceoExtension: true,
       initialDraftVariant: true,
@@ -142,13 +142,16 @@ describe('Open Cards', () => {
     expect(options.initialDraftVariant).is.false;
     expect(options.preludeDraftVariant).is.false;
     expect(options.ceosDraftVariant).is.false;
-    expect(options.twoCorpsVariant).is.false;
+    expect(options.twoCorpsVariant).is.true;
     expect(options.startingCorporations).eq(4);
     expect(options.startingPreludes).eq(6);
     for (const p of [player, player2]) {
       expect(p.dealtCorporationCards).has.length(4);
-      expect(p.dealtPreludeCards).has.length(6);
+      expect(p.dealtPreludeCards).has.length(7);
+      expect(p.dealtPreludeCards.map(toName).filter((name) => name === CardName.MERGER)).deep.eq([CardName.MERGER]);
     }
+    expect(openCardsModel(game).players?.map((offer) => offer.preludes.includes(CardName.MERGER))).deep.eq([true, true]);
+    expect(openCardsModel(game).preludeDeck).does.not.include(CardName.MERGER);
     expect(options.bannedCards).not.includes(CardName.LUNA_PROJECT_OFFICE);
     expect(options.bannedCards).not.includes(CardName.MARS_MATHS);
   });
