@@ -14,6 +14,7 @@ import {SelectCard} from '../src/server/inputs/SelectCard';
 import {SelectInitialCards} from '../src/server/inputs/SelectInitialCards';
 import {Server} from '../src/server/models/ServerModel';
 import {SerializedGame} from '../src/server/SerializedGame';
+import {Turmoil} from '../src/server/turmoil/Turmoil';
 import {TestGameOptions, testGame} from './TestGame';
 import {finishGeneration} from './TestingUtils';
 
@@ -408,6 +409,32 @@ describe('Open Cards', () => {
 
     game.projectDeck.drawN(game, 3);
     expect(openCardsModel(game).projectDeck).deep.eq(deck.slice(4));
+  });
+
+  it('shows the Prelude deck in draw order without its discards', () => {
+    const [game] = openCardsGame();
+    const deck = openCardsModel(game).preludeDeck;
+
+    const first = game.preludeDeck.drawOrThrow(game);
+    expect(first.name).eq(deck[0]);
+    game.preludeDeck.discard(first);
+
+    expect(openCardsModel(game).preludeDeck).deep.eq(deck.slice(1));
+    expect(openCardsModel(game).preludeDeck).does.not.include(first.name);
+  });
+
+  it('shows the global events after Distant in draw order', () => {
+    const [game] = openCardsGame({turmoilExtension: true});
+    const turmoil = Turmoil.getTurmoil(game);
+    const deck = openCardsModel(game).globalEventDeck;
+
+    expect(deck).deep.eq([...turmoil.globalEventDealer.deck].reverse().map(toName));
+    expect(deck).does.not.include(turmoil.currentGlobalEvent?.name);
+    expect(deck).does.not.include(turmoil.comingGlobalEvent?.name);
+    expect(deck).does.not.include(turmoil.distantGlobalEvent?.name);
+
+    expect(turmoil.globalEventDealer.draw()?.name).eq(deck[0]);
+    expect(openCardsModel(game).globalEventDeck).deep.eq(deck.slice(1));
   });
 
   it('the deck survives save and load in the same order', () => {

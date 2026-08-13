@@ -1,5 +1,5 @@
 <template>
-  <div class="open-cards-panel" @mouseleave="closeCardPreview">
+  <div class="open-cards-panel" @mouseleave="closePreview">
     <component :is="collapsible ? 'details' : 'div'" class="open-cards-panel-container"
       :class="{'accordion': collapsible}" :open="collapsible ? true : undefined">
       <component :is="collapsible ? 'summary' : 'div'" class="open-cards-panel-title"
@@ -15,8 +15,8 @@
           <div class="open-cards-packets">
             <div class="open-cards-packet" :class="packetClass(packet)" v-for="(packet, packetIdx) in row" :key="packetIdx">
               <div class="open-cards-chip" v-for="name in packet.cards" :key="name" role="button" tabindex="0"
-                :aria-expanded="selectedCard === name"
-                @mousemove="hoverCard(name, $event)" @mouseleave="closeCardPreview"
+                :aria-expanded="isSelectedCard(name)"
+                @mousemove="hoverCard(name, $event)" @mouseleave="closePreview"
                 @click="toggleCard(name, $event)"
                 @keydown.enter.prevent="toggleCard(name, $event)" @keydown.space.prevent="toggleCard(name, $event)">
                 <CardChip :name="name"/>
@@ -24,12 +24,42 @@
             </div>
           </div>
         </div>
+        <div v-if="openCards.preludeDeck.length > 0" class="open-cards-auxiliary-deck">
+          <div class="open-cards-auxiliary-title">
+            <span v-i18n>Prelude deck</span>&nbsp;<span>({{ openCards.preludeDeck.length }})</span>
+          </div>
+          <div class="open-cards-ordered-cards">
+            <div class="open-cards-chip" v-for="name in openCards.preludeDeck" :key="name" role="button" tabindex="0"
+              :aria-expanded="isSelectedCard(name)"
+              @mousemove="hoverCard(name, $event)" @mouseleave="closePreview"
+              @click="toggleCard(name, $event)"
+              @keydown.enter.prevent="toggleCard(name, $event)" @keydown.space.prevent="toggleCard(name, $event)">
+              <CardChip :name="name"/>
+            </div>
+          </div>
+        </div>
+        <div v-if="openCards.globalEventDeck.length > 0" class="open-cards-auxiliary-deck">
+          <div class="open-cards-auxiliary-title">
+            <span v-i18n>Later global events</span>&nbsp;<span>({{ openCards.globalEventDeck.length }})</span>
+          </div>
+          <div class="open-cards-ordered-cards">
+            <div class="open-cards-chip" v-for="name in openCards.globalEventDeck" :key="name" role="button" tabindex="0"
+              :aria-expanded="isSelectedGlobalEvent(name)"
+              @mousemove="hoverGlobalEvent(name, $event)" @mouseleave="closePreview"
+              @click="toggleGlobalEvent(name, $event)"
+              @keydown.enter.prevent="toggleGlobalEvent(name, $event)" @keydown.space.prevent="toggleGlobalEvent(name, $event)">
+              <span class="log-card card-chip background-color-global-event" v-i18n>{{ name }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </component>
     <Teleport to="body">
-      <div v-if="previewedCard !== undefined" ref="preview" class="open-cards-preview"
+      <div v-if="previewedItem !== undefined" ref="preview" class="open-cards-preview"
         :class="previewClasses" :style="previewStyle">
-        <Card :card="{name: previewedCard}"/>
+        <Card v-if="previewedCard !== undefined" :key="previewedCard" :card="{name: previewedCard}"/>
+        <GlobalEvent v-if="previewedGlobalEvent !== undefined" :key="previewedGlobalEvent"
+          :globalEventName="previewedGlobalEvent" type="distant"/>
       </div>
     </Teleport>
   </div>
@@ -40,9 +70,11 @@ import {defineComponent, nextTick} from 'vue';
 
 import Card from '@/client/components/card/Card.vue';
 import CardChip from '@/client/components/card/CardChip.vue';
+import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
 import {CardName} from '@/common/cards/CardName';
 import {Color} from '@/common/Color';
 import {OpenCardsModel} from '@/common/models/OpenCardsModel';
+import {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventName';
 import {playerColorClass} from '@/common/utils/utils';
 
 /** A run of deck cards shown together because one player would draft them. */
@@ -57,15 +89,19 @@ type PreviewPosition = {
   placement: 'above' | 'below';
 };
 
+type PreviewItem =
+  | {kind: 'card'; name: CardName}
+  | {kind: 'globalEvent'; name: GlobalEventName};
+
 type DataModel = {
   /**
-   * The card whose full art is on show, the one the pointer is over.
+   * The card or global event whose full representation is on show.
    *
    * It follows pointer movement rather than mouseenter, so that a row arriving under a
    * resting pointer, which happens on the first render, doesn't count as hovering.
    */
-  hoveredCard: CardName | undefined;
-  selectedCard: CardName | undefined;
+  hoveredItem: PreviewItem | undefined;
+  selectedItem: PreviewItem | undefined;
   hoveredPreviewPosition: PreviewPosition | undefined;
   selectedPreviewPosition: PreviewPosition | undefined;
 };
@@ -85,21 +121,28 @@ export default defineComponent({
   components: {
     Card,
     CardChip,
+    GlobalEvent,
   },
   data(): DataModel {
     return {
-      hoveredCard: undefined,
-      selectedCard: undefined,
+      hoveredItem: undefined,
+      selectedItem: undefined,
       hoveredPreviewPosition: undefined,
       selectedPreviewPosition: undefined,
     };
   },
   computed: {
+    previewedItem(): PreviewItem | undefined {
+      return this.hoveredItem ?? this.selectedItem;
+    },
     previewedCard(): CardName | undefined {
-      return this.hoveredCard ?? this.selectedCard;
+      return this.previewedItem?.kind === 'card' ? this.previewedItem.name : undefined;
+    },
+    previewedGlobalEvent(): GlobalEventName | undefined {
+      return this.previewedItem?.kind === 'globalEvent' ? this.previewedItem.name : undefined;
     },
     activePreviewPosition(): PreviewPosition | undefined {
-      return this.hoveredCard === undefined ? this.selectedPreviewPosition : this.hoveredPreviewPosition;
+      return this.hoveredItem === undefined ? this.selectedPreviewPosition : this.hoveredPreviewPosition;
     },
     previewClasses(): Record<string, boolean> {
       return {
@@ -148,40 +191,61 @@ export default defineComponent({
     },
   },
   methods: {
-    closeCardPreview() {
-      this.hoveredCard = undefined;
-      this.selectedCard = undefined;
+    closePreview() {
+      this.hoveredItem = undefined;
+      this.selectedItem = undefined;
       this.hoveredPreviewPosition = undefined;
       this.selectedPreviewPosition = undefined;
     },
     async hoverCard(name: CardName, event: MouseEvent) {
+      await this.hoverItem({kind: 'card', name}, event);
+    },
+    async hoverGlobalEvent(name: GlobalEventName, event: MouseEvent) {
+      await this.hoverItem({kind: 'globalEvent', name}, event);
+    },
+    async hoverItem(item: PreviewItem, event: MouseEvent) {
       const chip = event.currentTarget;
       if (!(chip instanceof window.HTMLElement)) {
         return;
       }
-      if (this.hoveredCard !== name) {
+      if (!this.isSameItem(this.hoveredItem, item)) {
         this.hoveredPreviewPosition = undefined;
       }
-      this.hoveredCard = name;
+      this.hoveredItem = item;
       await nextTick();
-      if (this.hoveredCard === name) {
+      if (this.isSameItem(this.hoveredItem, item)) {
         this.hoveredPreviewPosition = this.calculatePreviewPosition(chip);
       }
     },
     async toggleCard(name: CardName, event: Event) {
+      await this.toggleItem({kind: 'card', name}, event);
+    },
+    async toggleGlobalEvent(name: GlobalEventName, event: Event) {
+      await this.toggleItem({kind: 'globalEvent', name}, event);
+    },
+    async toggleItem(item: PreviewItem, event: Event) {
       const chip = event.currentTarget;
-      this.hoveredCard = undefined;
-      if (this.selectedCard === name) {
-        this.selectedCard = undefined;
+      this.hoveredItem = undefined;
+      if (this.isSameItem(this.selectedItem, item)) {
+        this.selectedItem = undefined;
         this.selectedPreviewPosition = undefined;
         return;
       }
-      this.selectedCard = name;
+      this.selectedItem = item;
       this.selectedPreviewPosition = undefined;
       await nextTick();
-      if (this.selectedCard === name && chip instanceof window.HTMLElement) {
+      if (this.isSameItem(this.selectedItem, item) && chip instanceof window.HTMLElement) {
         this.selectedPreviewPosition = this.calculatePreviewPosition(chip);
       }
+    },
+    isSameItem(first: PreviewItem | undefined, second: PreviewItem): boolean {
+      return first?.kind === second.kind && first.name === second.name;
+    },
+    isSelectedCard(name: CardName): boolean {
+      return this.isSameItem(this.selectedItem, {kind: 'card', name});
+    },
+    isSelectedGlobalEvent(name: GlobalEventName): boolean {
+      return this.isSameItem(this.selectedItem, {kind: 'globalEvent', name});
     },
     calculatePreviewPosition(chip: HTMLElement): PreviewPosition | undefined {
       const preview = this.$refs.preview;
