@@ -36,4 +36,6 @@ export type OpenCardsModel = {
   preludeDeck: ReadonlyArray<CardName>;
   /** Global events after the visible Distant event, next event drawn first. */
   globalEventDeck: ReadonlyArray<GlobalEventName>;
+  /** The Corporation deck, next card drawn first. Discards are omitted because they are reshuffled. */
+  corporationDeck: ReadonlyArray<CardName>;
 }

@@ -24,36 +24,59 @@
             </div>
           </div>
         </div>
-        <div v-if="openCards.preludeDeck.length > 0" class="open-cards-auxiliary-deck">
-          <div class="open-cards-auxiliary-title">
-            <span v-i18n>Prelude deck</span>&nbsp;<span>({{ openCards.preludeDeck.length }})</span>
-          </div>
-          <div class="open-cards-ordered-cards">
-            <div class="open-cards-chip" v-for="name in openCards.preludeDeck" :key="name" role="button" tabindex="0"
-              :aria-expanded="isSelectedCard(name)"
-              @mousemove="hoverCard(name, $event)" @mouseleave="closePreview"
-              @click="toggleCard(name, $event)"
-              @keydown.enter.prevent="toggleCard(name, $event)" @keydown.space.prevent="toggleCard(name, $event)">
-              <CardChip :name="name"/>
-            </div>
-          </div>
-        </div>
-        <div v-if="openCards.globalEventDeck.length > 0" class="open-cards-auxiliary-deck">
-          <div class="open-cards-auxiliary-title">
-            <span v-i18n>Later global events</span>&nbsp;<span>({{ openCards.globalEventDeck.length }})</span>
-          </div>
-          <div class="open-cards-ordered-cards">
-            <div class="open-cards-chip" v-for="name in openCards.globalEventDeck" :key="name" role="button" tabindex="0"
-              :aria-expanded="isSelectedGlobalEvent(name)"
-              @mousemove="hoverGlobalEvent(name, $event)" @mouseleave="closePreview"
-              @click="toggleGlobalEvent(name, $event)"
-              @keydown.enter.prevent="toggleGlobalEvent(name, $event)" @keydown.space.prevent="toggleGlobalEvent(name, $event)">
-              <span class="log-card card-chip background-color-global-event" v-i18n>{{ name }}</span>
-            </div>
-          </div>
-        </div>
       </div>
     </component>
+    <details v-if="openCards.preludeDeck.length > 0" class="open-cards-auxiliary-deck accordion" @toggle="closePreview">
+      <summary class="open-cards-auxiliary-title accordion-header">
+        <div class="is-action">
+          <i class="icon icon-arrow-right mr-1"></i>
+          <span v-i18n>Prelude deck</span>&nbsp;<span>({{ openCards.preludeDeck.length }})</span>
+        </div>
+      </summary>
+      <div class="open-cards-ordered-cards accordion-body">
+        <div class="open-cards-chip" v-for="name in openCards.preludeDeck" :key="name" role="button" tabindex="0"
+          :aria-expanded="isSelectedCard(name)"
+          @mousemove="hoverCard(name, $event)" @mouseleave="closePreview"
+          @click="toggleCard(name, $event)"
+          @keydown.enter.prevent="toggleCard(name, $event)" @keydown.space.prevent="toggleCard(name, $event)">
+          <CardChip :name="name"/>
+        </div>
+      </div>
+    </details>
+    <details v-if="openCards.globalEventDeck.length > 0" class="open-cards-auxiliary-deck accordion" @toggle="closePreview">
+      <summary class="open-cards-auxiliary-title accordion-header">
+        <div class="is-action">
+          <i class="icon icon-arrow-right mr-1"></i>
+          <span v-i18n>Later global events</span>&nbsp;<span>({{ openCards.globalEventDeck.length }})</span>
+        </div>
+      </summary>
+      <div class="open-cards-ordered-cards accordion-body">
+        <div class="open-cards-chip" v-for="name in openCards.globalEventDeck" :key="name" role="button" tabindex="0"
+          :aria-expanded="isSelectedGlobalEvent(name)"
+          @mousemove="hoverGlobalEvent(name, $event)" @mouseleave="closePreview"
+          @click="toggleGlobalEvent(name, $event)"
+          @keydown.enter.prevent="toggleGlobalEvent(name, $event)" @keydown.space.prevent="toggleGlobalEvent(name, $event)">
+          <span class="log-card card-chip background-color-global-event" v-i18n>{{ name }}</span>
+        </div>
+      </div>
+    </details>
+    <details v-if="openCards.corporationDeck.length > 0" class="open-cards-auxiliary-deck accordion" @toggle="closePreview">
+      <summary class="open-cards-auxiliary-title accordion-header">
+        <div class="is-action">
+          <i class="icon icon-arrow-right mr-1"></i>
+          <span v-i18n>Corporation deck</span>&nbsp;<span>({{ openCards.corporationDeck.length }})</span>
+        </div>
+      </summary>
+      <div class="open-cards-ordered-cards accordion-body">
+        <div class="open-cards-chip" v-for="name in openCards.corporationDeck" :key="name" role="button" tabindex="0"
+          :aria-expanded="isSelectedCard(name)"
+          @mousemove="hoverCard(name, $event)" @mouseleave="closePreview"
+          @click="toggleCard(name, $event)"
+          @keydown.enter.prevent="toggleCard(name, $event)" @keydown.space.prevent="toggleCard(name, $event)">
+          <CardChip :name="name"/>
+        </div>
+      </div>
+    </details>
     <Teleport to="body">
       <div v-if="previewedItem !== undefined" ref="preview" class="open-cards-preview"
         :class="previewClasses" :style="previewStyle">

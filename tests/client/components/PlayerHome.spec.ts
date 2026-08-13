@@ -45,6 +45,7 @@ describe('PlayerHome', () => {
       draftPackets: [],
       preludeDeck: [],
       globalEventDeck: [],
+      corporationDeck: [],
     };
     const wrapper = shallowMount(PlayerHome, {
       ...globalConfig,
