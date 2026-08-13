@@ -307,7 +307,6 @@ export class Game implements IGame, Logger {
       gameOptions.initialDraftVariant = false;
       gameOptions.preludeDraftVariant = false;
       gameOptions.ceosDraftVariant = false;
-      gameOptions.twoCorpsVariant = false;
     }
 
     const rng = new SeededRandom(seed);
