@@ -496,6 +496,7 @@ export class Server {
       })),
       preludeDeck: game.preludeDeck.inDrawOrder().map(toName),
       globalEventDeck: [...(game.turmoil?.globalEventDealer.deck ?? [])].reverse().map(toName),
+      corporationDeck: game.corporationDeck.inDrawOrder().map(toName),
     };
     if (this.inInitialSelection(game)) {
       const publishSelections = game.players.every((player) => player.pickedCorporationCard !== undefined);

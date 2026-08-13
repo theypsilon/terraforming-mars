@@ -25,6 +25,7 @@ function mountSetup(players: ReadonlyArray<OpenCardsPlayerModel>, viewerColor?: 
     draftPackets: [],
     preludeDeck: [],
     globalEventDeck: [],
+    corporationDeck: [],
   };
   return shallowMount(OpenCardsSetup, {
     ...globalConfig,

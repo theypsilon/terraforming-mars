@@ -55,6 +55,7 @@ function fakeOpenCardsModel(overrides?: Partial<OpenCardsModel>): OpenCardsModel
     ],
     preludeDeck: [],
     globalEventDeck: [],
+    corporationDeck: [],
     ...overrides,
   };
 }
@@ -95,6 +96,23 @@ describe('OpenCardsPanel', () => {
     expect(wrapper.get('.open-cards-panel-title').text()).includes('Project deck');
     expect(wrapper.find('details').exists()).is.false;
     expect(wrapper.find('summary').exists()).is.false;
+  });
+
+  it('keeps auxiliary deck controls collapsed in the popup', () => {
+    const wrapper = mountPanel(fakeOpenCardsModel({
+      preludeDeck: [CardName.ALLIED_BANK],
+      globalEventDeck: [GlobalEventName.PRODUCTIVITY],
+      corporationDeck: [CardName.HELION],
+    }), false);
+
+    expect(wrapper.get('.open-cards-panel-container').element.tagName).eq('DIV');
+    const auxiliaryDecks = wrapper.findAll('.open-cards-auxiliary-deck');
+    expect(auxiliaryDecks).has.length(3);
+    for (const deck of auxiliaryDecks) {
+      expect(deck.element.tagName).eq('DETAILS');
+      expect(deck.attributes()).not.to.have.property('open');
+      expect(deck.find('summary').exists()).is.true;
+    }
   });
 
   it('keeps the two-player row as two four-card packets', () => {
@@ -217,15 +235,18 @@ describe('OpenCardsPanel', () => {
     expect(wrapper.findAll('.open-cards-packet').flatMap(cardNames)).deep.eq([...projectDeck, ...discards]);
   });
 
-  it('shows the Prelude deck below the project deck in draw order', () => {
+  it('shows the Prelude deck below the project deck, collapsed and in draw order', () => {
     const preludes = [CardName.ALLIED_BANK, CardName.AQUIFER_TURBINES, CardName.BIOFUELS];
     const wrapper = mountPanel(fakeOpenCardsModel({preludeDeck: preludes}));
 
     const auxiliaryDeck = wrapper.get('.open-cards-auxiliary-deck');
+    expect(auxiliaryDeck.element.tagName).eq('DETAILS');
+    expect(auxiliaryDeck.attributes()).not.to.have.property('open');
     expect(auxiliaryDeck.get('.open-cards-auxiliary-title').text()).includes('Prelude deck');
     expect(auxiliaryDeck.get('.open-cards-auxiliary-title').text()).includes('(3)');
     expect(auxiliaryDeck.findAllComponents(CardChip).map((card: VueWrapper<any>) => card.props('name'))).deep.eq(preludes);
-    expect(wrapper.get('.open-cards-panel-body').element.lastElementChild).eq(auxiliaryDeck.element);
+    expect(auxiliaryDeck.element.previousElementSibling).eq(wrapper.get('.open-cards-panel-container').element);
+    expect(wrapper.find('.open-cards-panel-container .open-cards-auxiliary-deck').exists()).is.false;
   });
 
   it('shows later global events after the Prelude deck in draw order', () => {
@@ -239,18 +260,38 @@ describe('OpenCardsPanel', () => {
     expect(auxiliaryDecks).has.length(2);
     expect(auxiliaryDecks[1].get('.open-cards-auxiliary-title').text()).includes('Later global events');
     expect(auxiliaryDecks[1].get('.open-cards-auxiliary-title').text()).includes('(2)');
+    expect(auxiliaryDecks[1].attributes()).not.to.have.property('open');
     expect(auxiliaryDecks[1].findAll('.background-color-global-event').map((event) => event.text())).deep.eq(events);
   });
 
-  it('previews Prelude cards and later global events on hover and click', async () => {
+  it('shows the Corporation deck after the other auxiliary decks in draw order', () => {
+    const corporations = [CardName.HELION, CardName.ECOLINE];
+    const wrapper = mountPanel(fakeOpenCardsModel({
+      preludeDeck: [CardName.ALLIED_BANK],
+      globalEventDeck: [GlobalEventName.PRODUCTIVITY],
+      corporationDeck: corporations,
+    }));
+
+    const auxiliaryDecks = wrapper.findAll('.open-cards-auxiliary-deck');
+    expect(auxiliaryDecks).has.length(3);
+    const corporationDeck = auxiliaryDecks[2];
+    expect(corporationDeck.get('.open-cards-auxiliary-title').text()).includes('Corporation deck');
+    expect(corporationDeck.get('.open-cards-auxiliary-title').text()).includes('(2)');
+    expect(corporationDeck.attributes()).not.to.have.property('open');
+    expect(corporationDeck.findAllComponents(CardChip).map((card: VueWrapper<any>) => card.props('name'))).deep.eq(corporations);
+  });
+
+  it('previews Prelude, global event, and Corporation cards on hover and click', async () => {
     const event = GlobalEventName.PRODUCTIVITY;
     const wrapper = mountPanel(fakeOpenCardsModel({
       preludeDeck: [CardName.ALLIED_BANK],
       globalEventDeck: [event],
+      corporationDeck: [CardName.HELION],
     }));
     const auxiliaryDecks = wrapper.findAll('.open-cards-auxiliary-deck');
     const prelude = auxiliaryDecks[0].get('.open-cards-chip');
     const globalEvent = auxiliaryDecks[1].get('.open-cards-chip');
+    const corporation = auxiliaryDecks[2].get('.open-cards-chip');
 
     await prelude.trigger('mousemove');
     expect(wrapper.getComponent(Card).props('card').name).eq(CardName.ALLIED_BANK);
@@ -259,6 +300,10 @@ describe('OpenCardsPanel', () => {
     await globalEvent.trigger('click');
     expect(wrapper.getComponent(GlobalEvent).props('globalEventName')).eq(event);
     expect(globalEvent.attributes('aria-expanded')).eq('true');
+
+    await corporation.trigger('click');
+    expect(wrapper.getComponent(Card).props('card').name).eq(CardName.HELION);
+    expect(corporation.attributes('aria-expanded')).eq('true');
   });
 
   it('shows a card in full while the pointer is over its chip', async () => {

@@ -15,6 +15,7 @@ describe('OpenCardsShortcut', () => {
     draftPackets: [],
     preludeDeck: [CardName.ALLIED_BANK],
     globalEventDeck: [GlobalEventName.PRODUCTIVITY],
+    corporationDeck: [CardName.HELION],
   };
   let wrapper: VueWrapper;
 

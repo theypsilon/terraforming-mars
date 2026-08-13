@@ -164,6 +164,7 @@ describe('PlayerTags', () => {
       draftPackets: [],
       preludeDeck: [],
       globalEventDeck: [],
+      corporationDeck: [],
     };
     wrapper.vm.playerView.game.openCards = openCards;
     await wrapper.vm.$nextTick();

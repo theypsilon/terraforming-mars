@@ -423,6 +423,18 @@ describe('Open Cards', () => {
     expect(openCardsModel(game).preludeDeck).does.not.include(first.name);
   });
 
+  it('shows the Corporation deck in draw order without its discards', () => {
+    const [game] = openCardsGame();
+    const deck = openCardsModel(game).corporationDeck;
+
+    const first = game.corporationDeck.drawOrThrow(game);
+    expect(first.name).eq(deck[0]);
+    game.corporationDeck.discard(first);
+
+    expect(openCardsModel(game).corporationDeck).deep.eq(deck.slice(1));
+    expect(openCardsModel(game).corporationDeck).does.not.include(first.name);
+  });
+
   it('shows the global events after Distant in draw order', () => {
     const [game] = openCardsGame({turmoilExtension: true});
     const turmoil = Turmoil.getTurmoil(game);
