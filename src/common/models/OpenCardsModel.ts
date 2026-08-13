@@ -1,5 +1,6 @@
 import {CardName} from '../cards/CardName';
 import {Color} from '../Color';
+import {GlobalEventName} from '../turmoil/globalEvents/GlobalEventName';
 
 /** A run of project cards one player would receive in the next Research phase. */
 export type OpenCardsPacketModel = {
@@ -31,4 +32,8 @@ export type OpenCardsModel = {
   projectDiscards: ReadonlyArray<CardName>;
   /** The cards each player would receive if the next Research phase happened right now. */
   draftPackets: ReadonlyArray<OpenCardsPacketModel>;
+  /** The Prelude deck, next card drawn first. Discards are omitted because they are reshuffled. */
+  preludeDeck: ReadonlyArray<CardName>;
+  /** Global events after the visible Distant event, next event drawn first. */
+  globalEventDeck: ReadonlyArray<GlobalEventName>;
 }

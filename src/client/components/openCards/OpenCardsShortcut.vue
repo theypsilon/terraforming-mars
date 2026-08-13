@@ -1,14 +1,14 @@
 <template>
   <div class="open-cards-shortcut" ref="root">
     <button class="open-cards-shortcut-trigger" type="button" ref="trigger"
-      :title="$t('Project deck')" :aria-label="$t('Project deck')"
+      :title="$t('Open Cards')" :aria-label="$t('Open Cards')"
       aria-controls="open-cards-shortcut-overlay" :aria-expanded="isOpen"
       @click="toggleOverlay">
       <span class="open-cards-shortcut-icon" aria-hidden="true">🂠</span>
       <span class="open-cards-shortcut-label" v-i18n>Open Cards</span>
     </button>
     <div v-if="isOpen" id="open-cards-shortcut-overlay" class="open-cards-shortcut-overlay"
-      role="region" :aria-label="$t('Project deck')">
+      role="region" :aria-label="$t('Open Cards')">
       <OpenCardsPanel :openCards="openCards" :collapsible="false"/>
     </div>
   </div>

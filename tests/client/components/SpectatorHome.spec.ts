@@ -39,6 +39,8 @@ describe('SpectatorHome', () => {
       projectDeck: [],
       projectDiscards: [],
       draftPackets: [],
+      preludeDeck: [],
+      globalEventDeck: [],
     };
     const wrapper = shallowMount(SpectatorHome, {
       ...globalConfig,

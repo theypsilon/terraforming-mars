@@ -4,13 +4,17 @@ import {nextTick} from 'vue';
 import {globalConfig} from '../getLocalVue';
 import OpenCardsPanel from '@/client/components/openCards/OpenCardsPanel.vue';
 import OpenCardsShortcut from '@/client/components/openCards/OpenCardsShortcut.vue';
+import {CardName} from '@/common/cards/CardName';
 import {OpenCardsModel} from '@/common/models/OpenCardsModel';
+import {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventName';
 
 describe('OpenCardsShortcut', () => {
   const openCards: OpenCardsModel = {
     projectDeck: [],
     projectDiscards: [],
     draftPackets: [],
+    preludeDeck: [CardName.ALLIED_BANK],
+    globalEventDeck: [GlobalEventName.PRODUCTIVITY],
   };
   let wrapper: VueWrapper;
 
@@ -26,11 +30,12 @@ describe('OpenCardsShortcut', () => {
     wrapper.unmount();
   });
 
-  it('toggles the project deck overlay when clicked', async () => {
+  it('toggles the Open Cards overlay when clicked', async () => {
     const trigger = wrapper.get('.open-cards-shortcut-trigger');
 
     expect(trigger.element.tagName).eq('BUTTON');
     expect(trigger.get('.open-cards-shortcut-label').text()).eq('Open Cards');
+    expect(trigger.attributes('aria-label')).eq('Open Cards');
     expect(trigger.find('.tag-cards').exists()).is.false;
     expect(trigger.attributes('aria-expanded')).eq('false');
     expect(wrapper.find('.open-cards-shortcut-overlay').exists()).is.false;
@@ -71,6 +76,7 @@ describe('OpenCardsShortcut', () => {
     await wrapper.get('.open-cards-shortcut-trigger').trigger('click');
 
     expect(wrapper.get('.open-cards-shortcut-overlay').attributes('role')).eq('region');
+    expect(wrapper.get('.open-cards-shortcut-overlay').attributes('aria-label')).eq('Open Cards');
     expect(wrapper.getComponent(OpenCardsPanel).props('openCards')).deep.eq(openCards);
     expect(wrapper.getComponent(OpenCardsPanel).props('collapsible')).is.false;
     expect(wrapper.find('a[href="#openCards"]').exists()).is.false;
